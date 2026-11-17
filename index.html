@@ -7,11 +7,12 @@
 
 <!-- ============================================================
      DEPENDENCIAS (CDN)
-     - Tailwind CSS: estructura y layout responsivo
      - Font Awesome: iconos
      - Google Fonts: Lilita One (títulos bubble), Pacifico (script), Nunito (texto)
+     NOTA DE RENDIMIENTO: Tailwind "Play CDN" compila estilos en el navegador y
+     re-escanea la página con cada cambio (reloj, números). Eso trababa celulares
+     y PCs modestas, así que se reemplazó por utilidades CSS propias (abajo).
      ============================================================ -->
-<script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -19,414 +20,314 @@
 
 <style>
 /* ============================================================
-   1. VARIABLES DE TEMA
+   0. RESET + UTILIDADES (estilo Tailwind, precompiladas)
    ============================================================ */
-:root{
-  --red-1:#E53935;
-  --red-2:#D32F2F;
-  --red-3:#B71C1C;
-  --red-4:#7F0000;
-  --cream:#FFF8EC;
-  --gold-1:#FFD700;
-  --gold-2:#FFA000;
-  --ink:#1B1B1B;
-}
-
-*{ -webkit-tap-highlight-color: transparent; }
-html,body{ min-height:100%; }
-body{
-  font-family:'Nunito',system-ui,sans-serif;
-  color:var(--ink);
-  background:
-    radial-gradient(1200px 700px at 15% 10%, #ffffff 0%, transparent 60%),
-    radial-gradient(900px 600px at 90% 20%, #ffe9e4 0%, transparent 60%),
-    linear-gradient(180deg, #fffaf3 0%, #fbeee6 55%, #f3d9cf 100%);
-  overflow-x:hidden;
-}
-.font-bubble{ font-family:'Lilita One',cursive; letter-spacing:.5px; }
-.font-script{ font-family:'Pacifico',cursive; }
-
-/* Manchas de color desenfocadas en el fondo (efecto "cocina" desenfocada del flyer) */
-.blob{ position:fixed; border-radius:50%; filter:blur(70px); opacity:.45; z-index:0; pointer-events:none; }
-.blob.b1{ width:420px; height:420px; background:#ff8a80; top:-120px; left:-120px; animation:drift 18s ease-in-out infinite; }
-.blob.b2{ width:360px; height:360px; background:#ffd54f; bottom:-120px; right:-80px; animation:drift 22s ease-in-out infinite reverse; }
-.blob.b3{ width:300px; height:300px; background:#a5d6a7; top:40%; left:-140px; opacity:.25; animation:drift 26s ease-in-out infinite; }
-@keyframes drift{ 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,30px)} }
-
-/* Onda roja inferior como en el flyer */
-.bottom-wave{ position:fixed; left:0; right:0; bottom:0; height:90px; z-index:0; pointer-events:none; }
-
-/* Canvas de partículas (confeti ambiental + explosiones) */
-#fx{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:60; }
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+*{ -webkit-tap-highlight-color:transparent; }
+button{ font:inherit; cursor:pointer; border:0; background:none; color:inherit; }
+ol,ul{ list-style:none; }
+.hidden{ display:none !important; }
+.relative{ position:relative; }
+.flex{ display:flex; } .col{ flex-direction:column; } .wrap{ flex-wrap:wrap; }
+.center{ align-items:center; justify-content:center; } .items-center{ align-items:center; }
+.between{ justify-content:space-between; }
+.gap-2{ gap:.5rem; } .gap-3{ gap:.75rem; } .gap-4{ gap:1rem; } .gap-6{ gap:1.5rem; }
+.w-full{ width:100%; } .min-w-0{ min-width:0; } .flex-1{ flex:1 1 0%; }
+.text-center{ text-align:center; }
+.muted{ color:#6b6b6b; } .small{ font-size:.85rem; } .xs{ font-size:.75rem; }
+.bold{ font-weight:800; } .black{ font-weight:900; }
+.red-text{ color:#B71C1C; }
+.truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mt-2{ margin-top:.5rem; } .mt-4{ margin-top:1rem; } .mt-6{ margin-top:1.5rem; } .mt-8{ margin-top:2rem; }
+.mb-3{ margin-bottom:.75rem; } .mb-4{ margin-bottom:1rem; }
+.sm-only{ display:none; }
+@media (min-width:640px){ .sm-only{ display:inline; } }
 
 /* ============================================================
-   2. BANNER / TÍTULO ESTILO "BUBBLE" 3D
+   1. VARIABLES DE TEMA + FONDO (estático, sin blur animado)
    ============================================================ */
-.hero{ position:relative; display:flex; flex-direction:column; align-items:center; transition:transform .6s ease, margin .6s ease; }
+:root{
+  --red-1:#E53935; --red-2:#D32F2F; --red-3:#B71C1C; --red-4:#7F0000;
+  --gold-1:#FFD700; --gold-2:#FFA000; --ink:#1B1B1B;
+}
+html,body{ min-height:100%; }
+body{
+  font-family:'Nunito',system-ui,sans-serif; color:var(--ink); overflow-x:hidden;
+  background:
+    radial-gradient(520px 420px at 0% 0%, rgba(255,138,128,.45), transparent 70%),
+    radial-gradient(480px 380px at 100% 100%, rgba(255,213,79,.45), transparent 70%),
+    radial-gradient(420px 360px at 0% 55%, rgba(165,214,167,.22), transparent 70%),
+    linear-gradient(180deg, #fffaf3 0%, #fbeee6 55%, #f3d9cf 100%);
+  background-attachment:fixed;
+}
+.font-bubble{ font-family:'Lilita One',cursive; font-weight:400; letter-spacing:.5px; }
+
+.bottom-wave{ position:fixed; left:0; right:0; bottom:0; width:100%; height:90px; z-index:0; pointer-events:none; }
+#fx{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:60; }
+
+/* Layout principal */
+.topbar{ position:fixed; top:.75rem; left:.75rem; right:.75rem; z-index:40; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; justify-content:space-between; pointer-events:none; }
+.topbar > *{ pointer-events:auto; }
+main{ position:relative; z-index:10; max-width:1280px; margin:0 auto; padding:5rem 1rem 7rem; }
+.grid-wait{ display:grid; gap:2rem; align-items:center; }
+.grid-live{ display:grid; gap:2rem; align-items:start; }
+.info-col{ display:flex; flex-direction:column; gap:1.5rem; align-items:center; text-align:center; }
+@media (min-width:1024px){
+  .grid-wait{ grid-template-columns:1fr 1fr; gap:3rem; }
+  .grid-live{ grid-template-columns:1.05fr 1fr; gap:2.5rem; }
+  .info-col{ align-items:flex-start; text-align:left; }
+  .info-col .lg-start{ justify-content:flex-start; }
+}
+
+/* ============================================================
+   2. BANNER / TÍTULO "BUBBLE" 3D
+   ============================================================ */
+.hero{ position:relative; display:flex; flex-direction:column; align-items:center; margin-bottom:1.5rem; transition:transform .6s ease, margin .6s ease; }
+@media (min-width:640px){ .hero{ margin-bottom:2.5rem; } }
 .banner{
-  position:relative;
+  position:relative; text-align:center;
   background:linear-gradient(180deg, var(--red-1) 0%, var(--red-2) 55%, var(--red-3) 100%);
-  border:6px solid #fff;
-  border-radius:38px;
-  padding:.6rem 2.6rem 1.4rem;
-  box-shadow: 0 10px 0 var(--red-4), 0 22px 40px rgba(127,0,0,.35), inset 0 6px 0 rgba(255,255,255,.25);
+  border:6px solid #fff; border-radius:38px; padding:.6rem 2.6rem 1.4rem;
+  box-shadow:0 10px 0 var(--red-4), 0 22px 40px rgba(127,0,0,.3), inset 0 6px 0 rgba(255,255,255,.25);
   transform:rotate(-2deg);
-  text-align:center;
 }
-.kicker{
-  font-family:'Pacifico',cursive; color:#fff;
-  font-size:clamp(1.4rem,3.6vw,2.6rem); line-height:1.2;
-  text-shadow:0 3px 0 var(--red-4), 0 6px 12px rgba(0,0,0,.25);
-}
+.kicker{ font-family:'Pacifico',cursive; color:#fff; font-size:clamp(1.4rem,3.6vw,2.6rem); line-height:1.2; text-shadow:0 3px 0 var(--red-4); }
 .big-title{
-  font-family:'Lilita One',cursive; color:#fff;
-  font-size:clamp(3.4rem,11vw,7.5rem); line-height:.9;
-  letter-spacing:2px;
-  -webkit-text-stroke: 2px #fff;
-  text-shadow:
-    0 3px 0 #f1f1f1, 0 6px 0 #d9d9d9,
-    0 9px 0 var(--red-3), 0 12px 0 var(--red-4),
-    0 18px 26px rgba(0,0,0,.35);
+  font-family:'Lilita One',cursive; color:#fff; font-size:clamp(3.4rem,11vw,7.5rem); line-height:.9; letter-spacing:2px;
+  text-shadow:0 4px 0 #e2e2e2, 0 9px 0 var(--red-3), 0 13px 0 var(--red-4), 0 18px 22px rgba(0,0,0,.3);
 }
 .ribbon{
-  position:relative; margin-top:-1.1rem; z-index:2;
+  position:relative; margin-top:-1.1rem; z-index:2; transform:rotate(-2deg);
   background:linear-gradient(180deg, #FFE45C 0%, var(--gold-1) 45%, var(--gold-2) 100%);
-  padding:.25rem 2.8rem .55rem;
-  border-radius:14px;
-  transform:rotate(-2deg);
-  box-shadow:0 6px 0 #c77800, 0 14px 24px rgba(0,0,0,.2);
-  border:4px solid #fff;
+  padding:.25rem 2.8rem .55rem; border-radius:14px; border:4px solid #fff;
+  box-shadow:0 6px 0 #c77800, 0 14px 24px rgba(0,0,0,.18);
 }
 .ribbon span{ font-family:'Pacifico',cursive; font-size:clamp(1.3rem,3.4vw,2.4rem); color:#1b1b1b; }
-/* Rayitas de "explosión" decorativas */
 .burst{ position:absolute; width:46px; height:10px; border-radius:8px; background:var(--red-1); box-shadow:0 3px 0 var(--red-4); }
 .burst.y{ background:var(--gold-1); box-shadow:0 3px 0 #c77800; }
-.burst.s1{ top:6%; left:-4%; transform:rotate(-35deg); }
-.burst.s2{ top:22%; left:-8%; transform:rotate(-8deg); }
-.burst.s3{ top:6%; right:-4%; transform:rotate(35deg); }
-.burst.s4{ top:22%; right:-8%; transform:rotate(8deg); }
-.burst.s5{ bottom:4%; left:-2%; transform:rotate(30deg); }
-.burst.s6{ bottom:4%; right:-2%; transform:rotate(-30deg); }
-.burst{ animation:burstPulse 1.6s ease-in-out infinite; }
-.burst:nth-child(even){ animation-delay:.4s; }
-@keyframes burstPulse{ 0%,100%{opacity:1} 50%{opacity:.55} }
-
-/* Versión compacta del banner en modo en vivo */
+.burst.s1{ top:6%; left:-4%; transform:rotate(-35deg); } .burst.s2{ top:22%; left:-8%; transform:rotate(-8deg); }
+.burst.s3{ top:6%; right:-4%; transform:rotate(35deg); } .burst.s4{ top:22%; right:-8%; transform:rotate(8deg); }
 .hero.compact{ transform:scale(.62); margin-top:-2.2rem; margin-bottom:-3rem; }
-@media (max-width:640px){ .hero.compact{ transform:scale(.8); margin-bottom:-1.4rem; margin-top:-1rem; } .banner{ padding:.5rem 1.4rem 1.2rem; } }
+@media (max-width:640px){ .hero.compact{ transform:scale(.8); margin-bottom:-1.2rem; margin-top:-1rem; } .banner{ padding:.5rem 1.4rem 1.2rem; } }
 
 /* ============================================================
    3. COMPONENTES GENERALES
    ============================================================ */
+/* "Vidrio" sin backdrop-filter (el desenfoque en vivo es muy costoso en celulares) */
 .glass{
-  background:linear-gradient(160deg, rgba(255,255,255,.82), rgba(255,255,255,.58));
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-  border:2px solid rgba(255,255,255,.9);
-  border-radius:28px;
-  box-shadow:0 18px 40px rgba(127,0,0,.12), inset 0 1px 0 #fff;
+  background:linear-gradient(160deg, rgba(255,255,255,.93), rgba(255,255,255,.8));
+  border:2px solid #fff; border-radius:28px;
+  box-shadow:0 14px 32px rgba(127,0,0,.1);
 }
+.pad{ padding:1.25rem; } @media (min-width:640px){ .pad{ padding:1.5rem; } }
 .tool-btn{
-  display:inline-flex; align-items:center; gap:.5rem;
-  background:#fff; color:var(--red-2); font-weight:900;
-  border-radius:999px; padding:.55rem .9rem; border:2px solid #ffd6d3;
-  box-shadow:0 4px 0 #f3b8b3, 0 8px 18px rgba(0,0,0,.08);
-  transition:transform .15s, box-shadow .15s;
+  display:inline-flex; align-items:center; gap:.5rem; background:#fff; color:var(--red-2); font-weight:900;
+  border-radius:999px; padding:.55rem .9rem; border:2px solid #ffd6d3; box-shadow:0 4px 0 #f3b8b3;
+  transition:transform .15s;
 }
-.tool-btn:hover{ transform:translateY(-2px); }
-.tool-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 #f3b8b3; }
-.chip{
-  display:inline-flex; align-items:center; gap:.4rem; font-size:.78rem; font-weight:800;
-  background:rgba(255,255,255,.85); border-radius:999px; padding:.45rem .8rem; border:2px solid #fff;
-  box-shadow:0 4px 14px rgba(0,0,0,.06);
-}
+.tool-btn:hover{ transform:translateY(-2px); } .tool-btn:active{ transform:translateY(2px); }
+.tool-btn.on{ background:#fff3c4; border-color:#ffd54f; color:#7a5200; box-shadow:0 4px 0 #e0b23a; }
+.chip{ display:inline-flex; align-items:center; gap:.4rem; font-size:.78rem; font-weight:800; background:rgba(255,255,255,.92); border-radius:999px; padding:.45rem .8rem; border:2px solid #fff; }
 
-/* Botón principal gigante */
+/* Botón principal: el pulso usa transform/opacity (no box-shadow animado) */
 .btn-spin{
-  position:relative; overflow:hidden;
+  position:relative; display:inline-flex; align-items:center; gap:.6rem;
   font-family:'Lilita One',cursive; font-size:clamp(1.4rem,3.2vw,2.2rem); letter-spacing:1px;
   color:#fff; padding:1rem 2.4rem; border-radius:999px; border:5px solid #fff;
   background:linear-gradient(180deg, #ff5a52 0%, var(--red-1) 40%, var(--red-3) 100%);
-  box-shadow:0 9px 0 var(--red-4), 0 18px 34px rgba(183,28,28,.45), inset 0 4px 0 rgba(255,255,255,.35);
-  text-shadow:0 3px 0 var(--red-4);
-  transition:transform .12s, box-shadow .12s, filter .2s;
-  animation:btnPulse 1.8s ease-in-out infinite;
+  box-shadow:0 9px 0 var(--red-4), 0 16px 28px rgba(183,28,28,.35), inset 0 4px 0 rgba(255,255,255,.35);
+  text-shadow:0 3px 0 var(--red-4); transition:transform .12s;
 }
-.btn-spin::after{ /* brillo que recorre el botón */
-  content:''; position:absolute; top:-50%; left:-60%; width:40%; height:200%;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
-  transform:rotate(20deg); animation:shine 2.6s ease-in-out infinite;
-}
-.btn-spin:hover:not(:disabled){ transform:translateY(-3px) scale(1.02); }
-.btn-spin:active:not(:disabled){ transform:translateY(6px); box-shadow:0 3px 0 var(--red-4), 0 8px 16px rgba(183,28,28,.4); }
-.btn-spin:disabled{ cursor:not-allowed; animation:none; }
-.btn-spin.locked{
-  background:linear-gradient(180deg,#bdbdbd,#8d8d8d); box-shadow:0 9px 0 #5f5f5f, 0 18px 30px rgba(0,0,0,.2);
-  text-shadow:0 3px 0 #5f5f5f;
-}
-.btn-spin.locked::after{ display:none; }
-.btn-spin.busy{ filter:saturate(.7) brightness(.95); }
-@keyframes btnPulse{ 0%,100%{ box-shadow:0 9px 0 var(--red-4), 0 18px 34px rgba(183,28,28,.45), 0 0 0 0 rgba(255,215,0,.6), inset 0 4px 0 rgba(255,255,255,.35);} 50%{ box-shadow:0 9px 0 var(--red-4), 0 18px 34px rgba(183,28,28,.45), 0 0 0 14px rgba(255,215,0,0), inset 0 4px 0 rgba(255,255,255,.35);} }
-@keyframes shine{ 0%{left:-60%} 60%,100%{left:130%} }
+.btn-spin .ring{ position:absolute; inset:-9px; border-radius:999px; border:4px solid var(--gold-1); opacity:0; pointer-events:none; animation:ringOut 1.8s ease-out infinite; will-change:transform,opacity; }
+.btn-spin .shine{ position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
+.btn-spin .shine::after{ content:''; position:absolute; top:-50%; left:0; width:35%; height:200%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); transform:translateX(-150%) rotate(20deg); animation:shine 2.8s ease-in-out infinite; will-change:transform; }
+.btn-spin:hover:not(:disabled){ transform:translateY(-3px); }
+.btn-spin:active:not(:disabled){ transform:translateY(6px); }
+.btn-spin:disabled{ cursor:not-allowed; }
+.btn-spin:disabled .ring, .btn-spin:disabled .shine{ display:none; }
+.btn-spin.locked{ background:linear-gradient(180deg,#bdbdbd,#8d8d8d); box-shadow:0 9px 0 #5f5f5f; text-shadow:0 3px 0 #5f5f5f; }
+.btn-spin.busy{ opacity:.85; }
+@keyframes ringOut{ 0%{ transform:scale(.96); opacity:.85; } 100%{ transform:scale(1.14); opacity:0; } }
+@keyframes shine{ 0%{ transform:translateX(-150%) rotate(20deg); } 60%,100%{ transform:translateX(400%) rotate(20deg); } }
+
+@keyframes spin{ to{ transform:rotate(360deg); } }
+@keyframes floaty{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-12px); } }
 
 /* ============================================================
    4. PANTALLA DE ESPERA
    ============================================================ */
-.screen{ animation:screenIn .8s cubic-bezier(.2,.9,.25,1.2) both; }
-.screen.leaving{ animation:screenOut .7s ease-in both; }
-@keyframes screenIn{ from{opacity:0; transform:translateY(40px) scale(.96)} to{opacity:1; transform:none} }
-@keyframes screenOut{ to{opacity:0; transform:scale(.9) translateY(-30px); filter:blur(6px)} }
+.screen{ animation:screenIn .7s cubic-bezier(.2,.9,.25,1.2) both; }
+.screen.leaving{ animation:screenOut .6s ease-in both; }
+@keyframes screenIn{ from{ opacity:0; transform:translateY(30px); } to{ opacity:1; transform:none; } }
+@keyframes screenOut{ to{ opacity:0; transform:scale(.94) translateY(-20px); } }
 
-.product-stage{ position:relative; display:flex; justify-content:center; align-items:center; min-height:320px; }
-.product-stage .halo{
-  position:absolute; width:min(82%,420px); aspect-ratio:1; border-radius:50%;
-  background:radial-gradient(circle, rgba(255,215,0,.55) 0%, rgba(255,215,0,.15) 45%, transparent 70%);
-  animation:haloPulse 3s ease-in-out infinite;
-}
+.product-stage{ position:relative; display:flex; justify-content:center; align-items:center; min-height:300px; }
+.product-stage .halo{ position:absolute; width:min(82%,420px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, rgba(255,215,0,.5) 0%, rgba(255,215,0,.12) 45%, transparent 70%); }
 .product-stage .rays{
-  position:absolute; width:min(95%,480px); aspect-ratio:1; border-radius:50%;
-  background:repeating-conic-gradient(rgba(229,57,53,.12) 0 10deg, transparent 10deg 20deg);
-  animation:spin 30s linear infinite;
+  position:absolute; width:min(95%,460px); aspect-ratio:1; border-radius:50%;
+  background:repeating-conic-gradient(rgba(229,57,53,.1) 0 10deg, transparent 10deg 20deg);
   -webkit-mask:radial-gradient(circle, #000 30%, transparent 70%); mask:radial-gradient(circle, #000 30%, transparent 70%);
+  animation:spin 40s linear infinite; will-change:transform;
 }
-.product-svg{ position:relative; width:min(78%,340px); filter:drop-shadow(0 26px 22px rgba(127,0,0,.3)); animation:floaty 4s ease-in-out infinite; }
-@keyframes floaty{ 0%,100%{ transform:translateY(0) rotate(-1.5deg);} 50%{ transform:translateY(-14px) rotate(1.5deg);} }
-@keyframes haloPulse{ 0%,100%{ transform:scale(.95); opacity:.85;} 50%{ transform:scale(1.06); opacity:1;} }
-@keyframes spin{ to{ transform:rotate(360deg);} }
+.product-svg{ position:relative; width:min(78%,340px); animation:floaty 4s ease-in-out infinite; will-change:transform; }
+.product-shadow{ filter:none; }
 
-.product-name{ font-family:'Lilita One',cursive; line-height:.92; font-size:clamp(2.4rem,6vw,4.4rem); color:#111; transform:rotate(-3deg); }
-.product-name .red{ color:var(--red-2); display:block; text-shadow:0 3px 0 #ffd6d3; }
-.product-name .underline{ display:block; height:8px; width:80%; border-radius:8px; margin-top:.35rem; background:linear-gradient(90deg,transparent,var(--red-2) 15%,var(--red-2)); }
+.product-name{ font-family:'Lilita One',cursive; font-weight:400; line-height:.92; font-size:clamp(2.4rem,6vw,4.4rem); color:#111; transform:rotate(-3deg); }
+.product-name span{ display:block; }
+.product-name .red{ color:var(--red-2); text-shadow:0 3px 0 #ffd6d3; }
+.product-name .underline{ height:8px; width:80%; border-radius:8px; margin-top:.35rem; background:linear-gradient(90deg,transparent,var(--red-2) 15%,var(--red-2)); }
 
-.pill-date{
-  display:inline-flex; align-items:center; gap:.8rem;
-  background:linear-gradient(180deg,var(--red-1),var(--red-3)); color:#fff;
-  border-radius:22px; padding:.55rem 1.3rem .55rem .6rem; border:4px solid #fff;
-  box-shadow:0 6px 0 var(--red-4), 0 12px 22px rgba(127,0,0,.25);
-  font-family:'Lilita One',cursive; line-height:1;
-}
-.pill-date .cal{
-  width:54px; height:54px; border-radius:12px; background:#fff; color:var(--red-2);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.4rem;
-  box-shadow:inset 0 -4px 0 #ffd6d3;
-}
-.pill-hour{
-  display:inline-flex; align-items:center; justify-content:center;
-  font-family:'Lilita One',cursive; font-size:clamp(2rem,4.5vw,3rem); color:#fff; line-height:1;
-  background:linear-gradient(180deg,var(--red-1),var(--red-3)); border:5px solid #fff; border-radius:999px;
-  padding:.45rem 1.6rem; box-shadow:0 6px 0 var(--red-4), 0 12px 22px rgba(127,0,0,.25);
-  text-shadow:0 3px 0 var(--red-4);
-}
+.pills{ display:flex; flex-wrap:wrap; gap:1rem; align-items:center; justify-content:center; }
+.pill-date{ display:inline-flex; align-items:center; gap:.8rem; background:linear-gradient(180deg,var(--red-1),var(--red-3)); color:#fff; border-radius:22px; padding:.55rem 1.3rem .55rem .6rem; border:4px solid #fff; box-shadow:0 6px 0 var(--red-4); font-family:'Lilita One',cursive; line-height:1; text-align:left; }
+.pill-date .cal{ width:54px; height:54px; border-radius:12px; background:#fff; color:var(--red-2); display:flex; align-items:center; justify-content:center; font-size:1.4rem; box-shadow:inset 0 -4px 0 #ffd6d3; }
+.pill-date .d{ font-size:clamp(1.8rem,3.5vw,2.25rem); } .pill-date .m{ font-size:clamp(1.2rem,2.4vw,1.5rem); }
+.pill-hour{ font-family:'Lilita One',cursive; font-size:clamp(2rem,4.5vw,3rem); color:#fff; line-height:1; background:linear-gradient(180deg,var(--red-1),var(--red-3)); border:5px solid #fff; border-radius:999px; padding:.45rem 1.6rem; box-shadow:0 6px 0 var(--red-4); text-shadow:0 3px 0 var(--red-4); }
 
-.cd-box{
-  position:relative; text-align:center; border-radius:22px; padding:.9rem .4rem .7rem;
-  background:linear-gradient(180deg,#ff5a52 0%, var(--red-2) 55%, var(--red-3) 100%);
-  border:4px solid #fff; color:#fff;
-  box-shadow:0 7px 0 var(--red-4), 0 14px 26px rgba(127,0,0,.25), inset 0 3px 0 rgba(255,255,255,.3);
-}
-.cd-box .num{ font-family:'Lilita One',cursive; font-size:clamp(2.2rem,6vw,4rem); line-height:1; text-shadow:0 4px 0 var(--red-4); display:inline-block; }
-.cd-box .lbl{ font-weight:900; font-size:clamp(.65rem,1.4vw,.85rem); letter-spacing:2px; text-transform:uppercase; color:#ffe7e5; }
+.cd-title{ display:flex; align-items:center; justify-content:center; gap:.5rem; margin-bottom:1rem; font-weight:900; color:#B71C1C; letter-spacing:.15em; font-size:.85rem; }
+@media (min-width:1024px){ .cd-title{ justify-content:flex-start; } }
+.cd-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; }
+@media (min-width:640px){ .cd-grid{ gap:1rem; } }
+.cd-box{ text-align:center; border-radius:22px; padding:.9rem .3rem .7rem; color:#fff; background:linear-gradient(180deg,#ff5a52 0%, var(--red-2) 55%, var(--red-3) 100%); border:4px solid #fff; box-shadow:0 7px 0 var(--red-4), inset 0 3px 0 rgba(255,255,255,.3); }
+.cd-box .num{ font-family:'Lilita One',cursive; font-size:clamp(2.1rem,6vw,4rem); line-height:1; text-shadow:0 4px 0 var(--red-4); display:inline-block; }
+.cd-box .lbl{ font-weight:900; font-size:clamp(.6rem,1.4vw,.85rem); letter-spacing:2px; text-transform:uppercase; color:#ffe7e5; }
 .cd-box .num.tick{ animation:tick .35s ease-out; }
-@keyframes tick{ 0%{ transform:scale(1.25) translateY(-4px); color:var(--gold-1);} 100%{ transform:none; } }
+@keyframes tick{ 0%{ transform:scale(1.2) translateY(-3px); } 100%{ transform:none; } }
 
-.notice{
-  display:flex; gap:.8rem; align-items:center; font-weight:900;
-  background:linear-gradient(180deg,#FFF3B0,#FFE066); border:3px solid #fff; border-radius:20px;
-  padding:.8rem 1.1rem; box-shadow:0 5px 0 #d9a400, 0 10px 20px rgba(0,0,0,.08);
-}
-.notice i{ color:var(--red-2); font-size:1.5rem; animation:ring 2.4s ease-in-out infinite; transform-origin:top center; }
-@keyframes ring{ 0%,60%,100%{ transform:rotate(0);} 65%{transform:rotate(18deg);} 72%{transform:rotate(-16deg);} 79%{transform:rotate(10deg);} 86%{transform:rotate(-6deg);} }
+.notice{ display:flex; gap:.8rem; align-items:center; font-weight:900; text-align:left; background:linear-gradient(180deg,#FFF3B0,#FFE066); border:3px solid #fff; border-radius:20px; padding:.8rem 1.1rem; box-shadow:0 5px 0 #d9a400; }
+.notice i{ color:var(--red-2); font-size:1.5rem; }
+.test-badge{ margin-left:.5rem; padding:.1rem .5rem; border-radius:999px; background:#fde047; color:#713f12; font-size:.7rem; font-weight:900; }
 
 /* ============================================================
-   5. BOLILLERO
+   5. BOLILLERO (las bolillas se dibujan en un <canvas>)
    ============================================================ */
-.live-badge{
-  display:inline-flex; align-items:center; gap:.6rem; font-weight:900; letter-spacing:1px;
-  color:#fff; background:linear-gradient(90deg,var(--red-3),var(--red-1)); border:3px solid #fff;
-  border-radius:999px; padding:.45rem 1.1rem; box-shadow:0 5px 0 var(--red-4);
-}
-.live-badge .dot{ width:12px; height:12px; border-radius:50%; background:#fff; animation:blink 1s infinite; box-shadow:0 0 0 0 #fff; }
-@keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.25} }
+.live-top{ display:flex; justify-content:center; margin-bottom:1.5rem; }
+.live-badge{ display:inline-flex; align-items:center; gap:.6rem; font-weight:900; letter-spacing:1px; color:#fff; background:linear-gradient(90deg,var(--red-3),var(--red-1)); border:3px solid #fff; border-radius:999px; padding:.45rem 1.1rem; box-shadow:0 5px 0 var(--red-4); text-align:center; }
+.live-badge .dot{ flex:none; width:12px; height:12px; border-radius:50%; background:#fff; animation:blink 1s infinite; }
+@keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
 
+.machine-col{ display:flex; flex-direction:column; align-items:center; gap:1.75rem; }
 .machine{ position:relative; display:flex; flex-direction:column; align-items:center; }
 .sphere{
-  position:relative; width:clamp(250px,36vw,400px); aspect-ratio:1; border-radius:50%;
+  position:relative; width:clamp(250px,36vw,400px); aspect-ratio:1; border-radius:50%; overflow:hidden;
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 30%),
-    radial-gradient(circle at 50% 55%, rgba(255,235,233,.55) 0%, rgba(239,83,80,.28) 60%, rgba(183,28,28,.55) 100%);
+    radial-gradient(circle at 50% 55%, rgba(255,235,233,.6) 0%, rgba(239,83,80,.28) 60%, rgba(183,28,28,.55) 100%);
   border:7px solid #fff;
-  box-shadow: 0 0 0 6px var(--red-2), 0 0 0 10px #fff, 0 26px 50px rgba(127,0,0,.4), inset 0 -20px 40px rgba(127,0,0,.35), inset 0 10px 30px rgba(255,255,255,.6);
-  overflow:hidden;
+  box-shadow:0 0 0 6px var(--red-2), 0 0 0 10px #fff, 0 22px 40px rgba(127,0,0,.35), inset 0 -20px 40px rgba(127,0,0,.3);
+  will-change:transform; transform:translateZ(0);
 }
-.sphere-ring{ /* aros que giran */
-  position:absolute; inset:-2px; border-radius:50%;
-  background:repeating-conic-gradient(rgba(255,255,255,.0) 0 22deg, rgba(255,255,255,.18) 22deg 26deg);
-  animation:spin 14s linear infinite;
-}
-.sphere.spinning .sphere-ring{ animation-duration:.6s; }
-.sphere.spinning{ animation:wobble .18s linear infinite; }
-@keyframes wobble{ 0%{transform:rotate(-1.2deg)} 50%{transform:rotate(1.2deg)} 100%{transform:rotate(-1.2deg)} }
-.sphere-gloss{
-  position:absolute; top:7%; left:14%; width:38%; height:22%; border-radius:50%;
-  background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,0));
-  transform:rotate(-25deg); pointer-events:none;
-}
+.sphere-ring{ position:absolute; inset:-2px; border-radius:50%; background:repeating-conic-gradient(transparent 0 22deg, rgba(255,255,255,.18) 22deg 26deg); animation:spin 16s linear infinite; will-change:transform; }
+.sphere.spinning .sphere-ring{ animation-duration:.7s; }
+.sphere.spinning{ animation:wobble .2s linear infinite; }
+@keyframes wobble{ 0%,100%{ transform:rotate(-1deg); } 50%{ transform:rotate(1deg); } }
+#ballsCanvas{ position:absolute; inset:0; width:100%; height:100%; }
+.sphere-gloss{ position:absolute; top:7%; left:14%; width:38%; height:22%; border-radius:50%; background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,0)); transform:rotate(-25deg); pointer-events:none; }
 .sphere-axis{ position:absolute; top:50%; width:calc(100% + 60px); height:18px; left:-30px; margin-top:-9px; border-radius:10px; background:linear-gradient(180deg,#fff,#ddd); box-shadow:0 4px 0 #bbb; z-index:-1; }
-#ballsLayer{ position:absolute; inset:0; }
-.ball{
-  position:absolute; top:0; left:0; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-family:'Lilita One',cursive; line-height:1; will-change:transform;
-  box-shadow: inset -3px -4px 6px rgba(0,0,0,.25), inset 3px 3px 5px rgba(255,255,255,.7), 0 2px 4px rgba(0,0,0,.2);
-}
-.ball.c0{ background:radial-gradient(circle at 32% 30%, #fff 0%, #ff8a80 25%, var(--red-2) 70%); color:#fff; text-shadow:0 1px 0 var(--red-4); }
-.ball.c1{ background:radial-gradient(circle at 32% 30%, #fff 0%, #fffdf6 40%, #e6ddd0 100%); color:var(--red-2); }
-.ball.c2{ background:radial-gradient(circle at 32% 30%, #fff 0%, #ffe57f 30%, var(--gold-2) 85%); color:#5a3500; }
-
-.neck{
-  width:70px; height:34px; margin-top:-6px;
-  background:linear-gradient(90deg,#c62828,#ef5350 45%,#b71c1c); border:4px solid #fff; border-top:none;
-  border-radius:0 0 14px 14px; box-shadow:0 6px 0 var(--red-4);
-}
-.base{
-  margin-top:6px; width:clamp(240px,30vw,330px); padding:12px; border-radius:26px;
-  background:linear-gradient(180deg,#ff5a52,var(--red-2) 50%,var(--red-3)); border:5px solid #fff;
-  box-shadow:0 10px 0 var(--red-4), 0 22px 36px rgba(127,0,0,.35);
-}
-.display{
-  border-radius:16px; background:linear-gradient(180deg,#1a0000,#3a0303); border:3px solid #ffd6d3;
-  height:clamp(80px,9vw,104px); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
-  box-shadow:inset 0 6px 16px rgba(0,0,0,.6);
-}
-.display::before{ content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 2px, transparent 2px 4px); }
-#display{
-  font-family:'Lilita One',cursive; font-size:clamp(3rem,6vw,4.6rem); color:var(--gold-1);
-  text-shadow:0 0 12px rgba(255,215,0,.8), 0 0 28px rgba(255,160,0,.6); line-height:1;
-}
-#display.flash{ animation:flashNum .07s linear; }
-@keyframes flashNum{ from{ transform:translateY(-6px); opacity:.6 } to{ transform:none; opacity:1 } }
-#display.final{ animation:finalNum .9s cubic-bezier(.2,1.6,.4,1) both; color:#fff; text-shadow:0 0 18px #fff, 0 0 40px var(--gold-1); }
-@keyframes finalNum{ 0%{ transform:scale(.3);} 100%{ transform:scale(1);} }
+.neck{ width:70px; height:34px; margin-top:-6px; background:linear-gradient(90deg,#c62828,#ef5350 45%,#b71c1c); border:4px solid #fff; border-top:none; border-radius:0 0 14px 14px; box-shadow:0 6px 0 var(--red-4); }
+.base{ margin-top:6px; width:clamp(240px,30vw,330px); padding:12px; border-radius:26px; background:linear-gradient(180deg,#ff5a52,var(--red-2) 50%,var(--red-3)); border:5px solid #fff; box-shadow:0 10px 0 var(--red-4), 0 18px 30px rgba(127,0,0,.3); }
+.display{ border-radius:16px; background:linear-gradient(180deg,#1a0000,#3a0303); border:3px solid #ffd6d3; height:clamp(80px,9vw,104px); display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:inset 0 6px 16px rgba(0,0,0,.6); }
+#display{ font-family:'Lilita One',cursive; font-size:clamp(3rem,6vw,4.6rem); color:var(--gold-1); text-shadow:0 0 14px rgba(255,190,0,.8); line-height:1; display:inline-block; }
+#display.final{ animation:finalNum .9s cubic-bezier(.2,1.6,.4,1) both; color:#fff; text-shadow:0 0 18px #fff, 0 0 34px var(--gold-1); }
+@keyframes finalNum{ 0%{ transform:scale(.3); } 100%{ transform:scale(1); } }
 .lights{ display:flex; justify-content:space-between; margin-top:10px; padding:0 6px; }
-.lights span{ width:12px; height:12px; border-radius:50%; background:#ffe082; box-shadow:0 0 8px #ffd54f; animation:bulb 1.2s infinite; }
+.lights span{ width:12px; height:12px; border-radius:50%; background:#ffe082; box-shadow:0 0 8px #ffd54f; animation:bulb 1.2s steps(1) infinite; }
 .lights span:nth-child(even){ animation-delay:.6s; }
-.machine.spinning .lights span{ animation-duration:.18s; }
-@keyframes bulb{ 0%,100%{ opacity:1; } 50%{ opacity:.2; background:#fff; } }
+.machine.spinning .lights span{ animation-duration:.2s; }
+@keyframes bulb{ 0%{ opacity:1; } 50%{ opacity:.25; } }
+.remaining{ font-size:.85rem; font-weight:800; color:#555; text-align:center; }
+kbd{ padding:.1rem .4rem; background:#fff; border:1px solid #ddd; border-radius:6px; font-family:inherit; }
 
 /* ============================================================
-   6. TARJETA DEL GANADOR + HISTORIAL + TABLERO
+   6. TARJETA GANADOR + HISTORIAL + TABLERO
    ============================================================ */
-.winner-card{
-  position:relative; border-radius:30px; padding:2.4rem 1.4rem 1.8rem; text-align:center; overflow:hidden;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(255,215,0,.35), transparent 60%),
-    linear-gradient(180deg,#ff5a52 0%, var(--red-2) 50%, var(--red-3) 100%);
-  border:6px solid #fff; color:#fff;
-  box-shadow:0 10px 0 var(--red-4), 0 26px 46px rgba(127,0,0,.35);
-}
-.winner-card .rays{
-  position:absolute; left:50%; top:40%; width:900px; height:900px; margin:-450px 0 0 -450px;
-  background:repeating-conic-gradient(rgba(255,255,255,.08) 0 8deg, transparent 8deg 16deg);
-  animation:spin 40s linear infinite; pointer-events:none;
-}
-.bulb{ position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#fff6c2; box-shadow:0 0 10px #ffd54f, 0 0 2px #fff; animation:bulb 1s infinite; z-index:1; }
+.side-col{ display:flex; flex-direction:column; gap:1.5rem; }
+.winner-card{ position:relative; border-radius:30px; padding:2.4rem 1.4rem 1.8rem; text-align:center; overflow:hidden; color:#fff; background:radial-gradient(circle at 50% 0%, rgba(255,215,0,.35), transparent 60%), linear-gradient(180deg,#ff5a52 0%, var(--red-2) 50%, var(--red-3) 100%); border:6px solid #fff; box-shadow:0 10px 0 var(--red-4), 0 20px 36px rgba(127,0,0,.3); }
+.winner-card .rays{ position:absolute; left:50%; top:40%; width:700px; height:700px; margin:-350px 0 0 -350px; background:repeating-conic-gradient(rgba(255,255,255,.08) 0 8deg, transparent 8deg 16deg); pointer-events:none; }
+.bulb{ position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#fff6c2; box-shadow:0 0 8px #ffd54f; animation:bulb 1s steps(1) infinite; z-index:1; }
 .bulb.alt{ animation-delay:.5s; }
-.winner-card .trophy{ position:relative; font-size:2.6rem; color:var(--gold-1); filter:drop-shadow(0 4px 0 #a86a00); animation:floaty 3s ease-in-out infinite; }
+.winner-card .trophy{ position:relative; font-size:2.6rem; color:var(--gold-1); text-shadow:0 4px 0 #a86a00; }
 .winner-label{ position:relative; font-family:'Lilita One',cursive; font-size:clamp(1.6rem,3vw,2.2rem); letter-spacing:2px; color:var(--gold-1); text-shadow:0 3px 0 var(--red-4); }
-.winner-ball{
-  position:relative; margin:.6rem auto; width:clamp(96px,11vw,130px); aspect-ratio:1; border-radius:50%;
-  background:radial-gradient(circle at 32% 28%, #fff 0%, #fffdf3 35%, #ffe082 75%, var(--gold-2) 100%);
-  display:flex; align-items:center; justify-content:center; border:5px solid #fff;
-  box-shadow:0 8px 0 #b36b00, 0 16px 26px rgba(0,0,0,.3), inset -6px -8px 14px rgba(0,0,0,.18);
-}
+.winner-ball{ position:relative; margin:.6rem auto; width:clamp(96px,11vw,130px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 32% 28%, #fff 0%, #fffdf3 35%, #ffe082 75%, var(--gold-2) 100%); display:flex; align-items:center; justify-content:center; border:5px solid #fff; box-shadow:0 8px 0 #b36b00, inset -6px -8px 14px rgba(0,0,0,.15); }
 .winner-ball span{ font-family:'Lilita One',cursive; font-size:clamp(2.6rem,5vw,3.8rem); color:var(--red-2); line-height:1; }
-.winner-name{
-  position:relative; font-family:'Lilita One',cursive; font-size:clamp(1.8rem,4vw,3rem); line-height:1.05;
-  text-shadow:0 4px 0 var(--red-4), 0 10px 18px rgba(0,0,0,.25); word-break:break-word; padding:0 .5rem;
-}
-.winner-card.empty .winner-name{ font-size:clamp(1.1rem,2.2vw,1.5rem); opacity:.85; font-family:'Nunito'; font-weight:900; text-shadow:none; }
-.winner-card.pop{ animation:cardPop .9s cubic-bezier(.2,1.5,.4,1); }
-@keyframes cardPop{ 0%{ transform:scale(.85) rotate(-2deg);} 60%{ transform:scale(1.04) rotate(1deg);} 100%{ transform:none;} }
+.winner-name{ position:relative; font-family:'Lilita One',cursive; font-size:clamp(1.8rem,4vw,3rem); line-height:1.05; text-shadow:0 4px 0 var(--red-4); word-break:break-word; padding:0 .5rem; }
+.winner-card.empty .winner-name{ font-size:clamp(1.1rem,2.2vw,1.5rem); opacity:.9; font-family:'Nunito'; font-weight:900; text-shadow:none; }
+.winner-meta{ position:relative; margin-top:.5rem; font-size:.85rem; font-weight:800; color:#ffe1de; }
+.winner-card.pop{ animation:cardPop .8s cubic-bezier(.2,1.5,.4,1); }
+@keyframes cardPop{ 0%{ transform:scale(.88); } 60%{ transform:scale(1.03); } 100%{ transform:none; } }
 
-.history-item{
-  display:flex; align-items:center; gap:.8rem; padding:.55rem .7rem; border-radius:16px;
-  background:#fff; border:2px solid #ffe3e0; box-shadow:0 3px 0 #ffd0cc;
-  animation:slideIn .5s cubic-bezier(.2,1.3,.4,1) both;
-}
-.history-item .hnum{
-  flex:none; width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  font-family:'Lilita One',cursive; font-size:1.3rem; color:#fff;
-  background:radial-gradient(circle at 32% 30%, #ff8a80, var(--red-2) 70%); box-shadow:inset -2px -3px 5px rgba(0,0,0,.25);
-}
+.section-title{ font-family:'Lilita One',cursive; font-weight:400; font-size:1.5rem; color:#B71C1C; }
+.history{ display:flex; flex-direction:column; gap:.5rem; max-height:18rem; overflow:auto; padding-right:.25rem; }
+.history-item{ display:flex; align-items:center; gap:.8rem; padding:.55rem .7rem; border-radius:16px; background:#fff; border:2px solid #ffe3e0; box-shadow:0 3px 0 #ffd0cc; }
+.history-item.new{ animation:slideIn .5s cubic-bezier(.2,1.3,.4,1) both; }
+.history-item .hnum{ flex:none; width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Lilita One',cursive; font-size:1.3rem; color:#fff; background:radial-gradient(circle at 32% 30%, #ff8a80, var(--red-2) 70%); }
+.history-item .hname{ font-weight:900; color:#222; }
+.history-item .hmeta{ font-size:.75rem; font-weight:800; color:#777; }
 .history-item.first{ background:linear-gradient(90deg,#fff8d6,#fff); border-color:#ffe082; box-shadow:0 3px 0 #f2c94c; }
-@keyframes slideIn{ from{ opacity:0; transform:translateX(30px);} to{ opacity:1; transform:none;} }
+.history-item .fa-trophy{ color:#eab308; font-size:1.25rem; }
+@keyframes slideIn{ from{ opacity:0; transform:translateX(30px); } to{ opacity:1; transform:none; } }
 
-.cell{
-  aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  font-family:'Lilita One',cursive; font-size:clamp(.95rem,1.8vw,1.25rem);
-  background:#fff; color:var(--red-2); border:2px solid #ffd6d3; box-shadow:0 3px 0 #f3c2bd;
-  transition:all .3s;
-}
-.cell.out{ background:radial-gradient(circle at 32% 30%, #ff8a80, var(--red-2) 70%); color:#fff; border-color:#fff; box-shadow:0 3px 0 var(--red-4); opacity:.95; position:relative; }
-.cell.out::after{ content:'\f00c'; font-family:'Font Awesome 6 Free'; font-weight:900; position:absolute; right:-4px; top:-4px; font-size:.65rem; width:18px; height:18px; border-radius:50%; background:var(--gold-1); color:#5a3500; display:flex; align-items:center; justify-content:center; border:2px solid #fff; }
+.board{ display:grid; grid-template-columns:repeat(5,1fr); gap:.5rem; }
+@media (min-width:640px){ .board{ grid-template-columns:repeat(10,1fr); gap:.75rem; } }
+.cell{ position:relative; aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Lilita One',cursive; font-size:clamp(.95rem,1.8vw,1.25rem); background:#fff; color:var(--red-2); border:2px solid #ffd6d3; box-shadow:0 3px 0 #f3c2bd; }
+.cell.out{ background:radial-gradient(circle at 32% 30%, #ff8a80, var(--red-2) 70%); color:#fff; border-color:#fff; box-shadow:0 3px 0 var(--red-4); }
+.cell.out::after{ content:'\f00c'; font-family:'Font Awesome 6 Free'; font-weight:900; position:absolute; right:-4px; top:-4px; font-size:.6rem; width:18px; height:18px; border-radius:50%; background:var(--gold-1); color:#5a3500; display:flex; align-items:center; justify-content:center; border:2px solid #fff; }
 .cell.latest{ animation:latestCell 1.4s ease-in-out infinite; }
-@keyframes latestCell{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.15); box-shadow:0 0 0 6px rgba(255,215,0,.6);} }
+@keyframes latestCell{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.15); } }
 
 /* ============================================================
-   7. OVERLAY DE REVELACIÓN DEL GANADOR
+   7. OVERLAY DE REVELACIÓN
    ============================================================ */
-.reveal{
-  position:fixed; inset:0; z-index:55; display:flex; align-items:center; justify-content:center; cursor:pointer;
-  background:radial-gradient(circle at 50% 45%, rgba(229,57,53,.92), rgba(127,0,0,.96));
-  animation:fadeIn .35s ease both;
-}
-.reveal.hidden{ display:none; }
-.reveal .rays{
-  position:absolute; left:50%; top:45%; width:2000px; height:2000px; margin:-1000px 0 0 -1000px;
-  background:repeating-conic-gradient(rgba(255,215,0,.16) 0 7deg, transparent 7deg 14deg);
-  animation:spin 22s linear infinite;
-}
+.reveal{ position:fixed; inset:0; z-index:55; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; background:radial-gradient(circle at 50% 45%, #e53935, #7f0000); animation:fadeIn .3s ease both; }
+.reveal .rays{ position:absolute; left:50%; top:45%; width:180vmax; height:180vmax; margin:-90vmax 0 0 -90vmax; background:repeating-conic-gradient(rgba(255,215,0,.14) 0 7deg, transparent 7deg 14deg); animation:spin 30s linear infinite; will-change:transform; }
 .reveal-inner{ position:relative; text-align:center; padding:1rem; max-width:95vw; }
 .reveal-kicker{ font-family:'Lilita One',cursive; color:var(--gold-1); font-size:clamp(1.8rem,5vw,3.4rem); text-shadow:0 4px 0 var(--red-4); animation:dropIn .6s cubic-bezier(.2,1.5,.4,1) both; }
-.reveal-ball{
-  margin:1rem auto; width:clamp(180px,32vw,300px); aspect-ratio:1; border-radius:50%;
-  background:radial-gradient(circle at 32% 28%, #fff 0%, #fffdf3 35%, #ffe082 72%, var(--gold-2) 100%);
-  border:8px solid #fff; display:flex; align-items:center; justify-content:center;
-  box-shadow:0 14px 0 #a86a00, 0 30px 60px rgba(0,0,0,.45), 0 0 80px rgba(255,215,0,.8), inset -12px -16px 26px rgba(0,0,0,.18);
-  animation:ballBoom 1s cubic-bezier(.2,1.6,.35,1) .15s both;
-}
+.reveal-ball{ margin:1rem auto; width:clamp(180px,32vw,300px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 32% 28%, #fff 0%, #fffdf3 35%, #ffe082 72%, var(--gold-2) 100%); border:8px solid #fff; display:flex; align-items:center; justify-content:center; box-shadow:0 14px 0 #a86a00, 0 0 60px rgba(255,215,0,.7); animation:ballBoom 1s cubic-bezier(.2,1.6,.35,1) .15s both; }
 .reveal-ball span{ font-family:'Lilita One',cursive; font-size:clamp(5rem,15vw,9.5rem); color:var(--red-2); line-height:1; text-shadow:0 5px 0 #ffd6d3; }
-.reveal-name{
-  font-family:'Lilita One',cursive; color:#fff; font-size:clamp(2.2rem,7vw,5rem); line-height:1.02; word-break:break-word;
-  text-shadow:0 5px 0 var(--red-4), 0 14px 30px rgba(0,0,0,.4);
-  animation:dropIn .7s cubic-bezier(.2,1.5,.4,1) .7s both;
-}
+.reveal-name{ font-family:'Lilita One',cursive; color:#fff; font-size:clamp(2.2rem,7vw,5rem); line-height:1.02; word-break:break-word; text-shadow:0 5px 0 var(--red-4); animation:dropIn .7s cubic-bezier(.2,1.5,.4,1) .7s both; }
 .reveal-sub{ color:#ffe7e5; font-weight:900; letter-spacing:3px; margin-top:.4rem; animation:fadeIn .6s ease 1.1s both; }
 .reveal-hint{ margin-top:1.4rem; color:#fff; opacity:.75; font-weight:800; font-size:.9rem; animation:fadeIn .6s ease 1.6s both; }
-@keyframes fadeIn{ from{opacity:0} to{opacity:1} }
-@keyframes dropIn{ from{ opacity:0; transform:translateY(-40px) scale(.8);} to{ opacity:1; transform:none;} }
-@keyframes ballBoom{ 0%{ transform:scale(0) rotate(-200deg);} 100%{ transform:scale(1) rotate(0);} }
+@keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes dropIn{ from{ opacity:0; transform:translateY(-40px) scale(.8); } to{ opacity:1; transform:none; } }
+@keyframes ballBoom{ 0%{ transform:scale(0) rotate(-200deg); } 100%{ transform:scale(1) rotate(0); } }
 
 /* ============================================================
-   8. MODAL DE CONFIGURACIÓN + TOAST
+   8. MODAL + TOAST
    ============================================================ */
-.modal{ position:fixed; inset:0; z-index:70; display:flex; align-items:flex-start; justify-content:center; padding:2vh 1rem; background:rgba(60,0,0,.45); backdrop-filter:blur(6px); overflow:auto; }
-.modal.hidden{ display:none; }
-.modal-card{ width:100%; max-width:980px; animation:screenIn .45s cubic-bezier(.2,1.2,.3,1) both; }
-.modal textarea, .modal input{ border:2px solid #ffd6d3; border-radius:16px; background:#fff; outline:none; }
-.modal textarea:focus, .modal input:focus{ border-color:var(--red-1); box-shadow:0 0 0 4px rgba(229,57,53,.15); }
+.modal{ position:fixed; inset:0; z-index:70; display:flex; align-items:flex-start; justify-content:center; padding:2vh 1rem; background:rgba(60,0,0,.6); overflow:auto; }
+.modal-card{ width:100%; max-width:980px; background:#fff8f6; border-radius:28px; border:2px solid #fff; padding:1.25rem; box-shadow:0 20px 50px rgba(0,0,0,.3); }
+@media (min-width:640px){ .modal-card{ padding:1.75rem; } }
+.modal-grid{ display:grid; gap:1.25rem; }
+@media (min-width:768px){ .modal-grid{ grid-template-columns:1fr 1fr; } }
+.modal textarea, .modal input{ width:100%; border:2px solid #ffd6d3; border-radius:16px; background:#fff; outline:none; font:inherit; font-weight:600; font-size:.9rem; padding:.75rem; }
+.modal textarea:focus, .modal input:focus{ border-color:var(--red-1); }
 .btn{ display:inline-flex; align-items:center; gap:.5rem; font-weight:900; border-radius:14px; padding:.65rem 1rem; transition:transform .12s; }
 .btn:active{ transform:translateY(2px); }
 .btn-red{ background:linear-gradient(180deg,var(--red-1),var(--red-3)); color:#fff; box-shadow:0 4px 0 var(--red-4); }
 .btn-white{ background:#fff; color:var(--red-2); border:2px solid #ffd6d3; box-shadow:0 4px 0 #f3c2bd; }
 .btn-gold{ background:linear-gradient(180deg,#ffe45c,var(--gold-2)); color:#3d2600; box-shadow:0 4px 0 #b36b00; }
+.preview{ display:grid; grid-template-columns:1fr 1fr; gap:.4rem; max-height:360px; overflow:auto; padding-right:.25rem; }
 .prev-chip{ display:flex; gap:.4rem; align-items:center; font-size:.8rem; background:#fff; border:2px solid #ffe3e0; border-radius:12px; padding:.3rem .45rem; min-width:0; }
 .prev-chip b{ flex:none; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--red-2); color:#fff; font-family:'Lilita One'; font-weight:400; }
 .prev-chip span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .prev-chip.def span{ color:#9e9e9e; font-style:italic; }
+details.tools{ margin-top:1.5rem; background:#fff; border-radius:18px; border:2px solid #ffe3e0; padding:1rem; }
+details.tools summary{ font-weight:900; color:#B71C1C; cursor:pointer; }
+.tools-grid{ display:grid; gap:1rem; margin-top:.75rem; font-size:.9rem; }
+@media (min-width:640px){ .tools-grid{ grid-template-columns:1fr 1fr; } }
+.modal-foot{ margin-top:1.25rem; padding-top:1rem; border-top:2px solid #ffe3e0; display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; justify-content:space-between; }
 
-#toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(30px); opacity:0; z-index:80; transition:all .35s; pointer-events:none;
-  background:#1b1b1b; color:#fff; font-weight:800; border-radius:999px; padding:.7rem 1.2rem; box-shadow:0 10px 30px rgba(0,0,0,.3); }
+#toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(30px); opacity:0; z-index:80; transition:transform .35s, opacity .35s; pointer-events:none; background:#1b1b1b; color:#fff; font-weight:800; border-radius:999px; padding:.7rem 1.2rem; }
 #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ============================================================
+   9. MODO LIVIANO (se activa solo en equipos lentos, o con el botón ⚡)
+   Apaga las animaciones decorativas continuas; el sorteo sigue igual.
+   ============================================================ */
+html.lite .rays, html.lite .sphere-ring, html.lite .btn-spin .ring, html.lite .btn-spin .shine,
+html.lite .lights span, html.lite .bulb, html.lite .live-badge .dot, html.lite .cell.latest{ animation:none !important; }
+html.lite .product-svg{ animation:none; }
+html.lite .product-stage .rays{ display:none; }
+html.lite .sphere.spinning{ animation:none; }
+html.lite body{ background-attachment:scroll; }
 
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; }
@@ -435,8 +336,6 @@ body{
 </head>
 
 <body>
-  <!-- Fondo decorativo -->
-  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
   <svg class="bottom-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
     <path d="M0,40 C320,90 640,0 960,40 C1180,68 1320,50 1440,30 L1440,90 L0,90 Z" fill="#E53935"/>
     <path d="M0,58 C360,96 700,20 1000,58 C1200,80 1340,66 1440,52 L1440,90 L0,90 Z" fill="#B71C1C"/>
@@ -445,23 +344,23 @@ body{
   <canvas id="fx"></canvas>
 
   <!-- ============== BARRA DE HERRAMIENTAS ============== -->
-  <div class="fixed top-3 left-3 right-3 z-40 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-    <div class="chip pointer-events-auto" id="syncChip" title="Origen de la hora">
-      <i class="fa-solid fa-circle-notch fa-spin text-gray-400"></i><span>Sincronizando hora…</span>
+  <div class="topbar">
+    <div class="chip" id="syncChip" title="Origen de la hora">
+      <i class="fa-solid fa-circle-notch fa-spin"></i><span>Sincronizando hora…</span>
     </div>
-    <div class="flex gap-2 pointer-events-auto">
+    <div class="flex gap-2">
       <button class="tool-btn" id="btnConfig" title="Cargar participantes y configurar">
-        <i class="fa-solid fa-users-gear"></i><span class="hidden sm:inline">Participantes</span>
+        <i class="fa-solid fa-users-gear"></i><span class="sm-only">Participantes</span>
       </button>
-      <button class="tool-btn" id="btnSound" title="Sonido activado / desactivado"><i class="fa-solid fa-volume-high"></i></button>
+      <button class="tool-btn" id="btnLite" title="Modo liviano (menos animaciones, más fluido)"><i class="fa-solid fa-bolt"></i></button>
+      <button class="tool-btn" id="btnSound" title="Sonido"><i class="fa-solid fa-volume-high"></i></button>
       <button class="tool-btn" id="btnFull" title="Pantalla completa (para proyectar)"><i class="fa-solid fa-expand"></i></button>
     </div>
   </div>
 
-  <main class="relative z-10 max-w-7xl mx-auto px-4 pt-20 pb-28">
-
+  <main>
     <!-- ============== BANNER PRINCIPAL ============== -->
-    <header id="hero" class="hero mb-6 sm:mb-10">
+    <header id="hero" class="hero">
       <div class="relative">
         <span class="burst s1"></span><span class="burst y s2"></span>
         <span class="burst s3"></span><span class="burst y s4"></span>
@@ -475,13 +374,11 @@ body{
 
     <!-- ============== PANTALLA 1: CUENTA REGRESIVA ============== -->
     <section id="screenWait" class="screen">
-      <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-
-        <!-- Producto -->
+      <div class="grid-wait">
         <div class="product-stage">
           <div class="rays"></div>
           <div class="halo"></div>
-          <!-- Ilustración vectorial del producto (procesador manual rojo) -->
+          <!-- Ilustración vectorial del producto (sombra dibujada, sin filtros costosos) -->
           <svg class="product-svg" viewBox="0 0 260 280" aria-label="SuperSonic Turbo Chef">
             <defs>
               <linearGradient id="gBody" x1="0" x2="1">
@@ -498,10 +395,8 @@ body{
               </linearGradient>
               <clipPath id="clipBody"><rect x="52" y="96" width="156" height="158" rx="20"/></clipPath>
             </defs>
-            <ellipse cx="130" cy="262" rx="98" ry="12" fill="#000" opacity=".18"/>
-            <!-- Cuerpo -->
+            <ellipse cx="130" cy="262" rx="98" ry="12" fill="#7f0000" opacity=".2"/>
             <rect x="52" y="96" width="156" height="158" rx="20" fill="url(#gBody)"/>
-            <!-- Alimentos picados -->
             <g clip-path="url(#clipBody)">
               <rect x="52" y="170" width="156" height="90" fill="url(#gFood)" opacity=".9"/>
               <g fill="#FFAB91" opacity=".95">
@@ -520,24 +415,18 @@ body{
                 <rect x="150" y="160" width="12" height="11" transform="rotate(-30 156 165)"/>
                 <rect x="120" y="200" width="12" height="11" transform="rotate(10 126 205)"/>
               </g>
-              <!-- Cuchilla -->
               <rect x="70" y="150" width="120" height="6" rx="3" fill="#fff" opacity=".85" transform="rotate(-8 130 153)"/>
               <rect x="124" y="104" width="12" height="150" fill="#fff" opacity=".18"/>
             </g>
-            <!-- Brillos del vaso -->
             <rect x="64" y="104" width="12" height="138" rx="6" fill="#fff" opacity=".35"/>
             <rect x="84" y="108" width="5" height="120" rx="3" fill="#fff" opacity=".25"/>
             <rect x="182" y="110" width="8" height="120" rx="4" fill="#fff" opacity=".15"/>
-            <!-- Aro blanco -->
             <rect x="44" y="86" width="172" height="18" rx="9" fill="#fff"/>
             <rect x="44" y="98" width="172" height="6" rx="3" fill="#E0E0E0"/>
-            <!-- Tapa -->
             <path d="M44 90 C44 52 80 36 130 36 C180 36 216 52 216 90 Z" fill="url(#gLid)"/>
             <ellipse cx="130" cy="50" rx="58" ry="10" fill="#fff" opacity=".22"/>
-            <!-- Manija de tirar -->
             <rect x="204" y="52" width="38" height="18" rx="8" fill="#fff"/>
             <rect x="214" y="58" width="22" height="6" rx="3" fill="#E0E0E0"/>
-            <!-- Marcas de medida -->
             <g stroke="#fff" stroke-width="2" opacity=".6">
               <line x1="190" y1="140" x2="200" y2="140"/><line x1="194" y1="160" x2="200" y2="160"/>
               <line x1="190" y1="180" x2="200" y2="180"/><line x1="194" y1="200" x2="200" y2="200"/>
@@ -545,31 +434,22 @@ body{
           </svg>
         </div>
 
-        <!-- Info + cuenta regresiva -->
-        <div class="flex flex-col gap-6 items-center lg:items-start text-center lg:text-left">
+        <div class="info-col">
           <h2 class="product-name">
-            <span class="block">SUPER</span>
-            <span class="block">SONIC</span>
-            <span class="red">TURBO CHEF</span>
-            <span class="underline"></span>
+            <span>SUPER</span><span>SONIC</span><span class="red">TURBO CHEF</span><span class="underline"></span>
           </h2>
 
-          <div class="flex flex-wrap gap-4 items-center justify-center lg:justify-start">
+          <div class="pills lg-start">
             <div class="pill-date">
               <div class="cal"><i class="fa-regular fa-calendar-days"></i></div>
-              <div class="text-left">
-                <div id="pillDay" class="text-3xl sm:text-4xl">18 DE</div>
-                <div id="pillMonth" class="text-xl sm:text-2xl">NOVIEMBRE</div>
-              </div>
+              <div><div id="pillDay" class="d">18 DE</div><div id="pillMonth" class="m">NOVIEMBRE</div></div>
             </div>
             <div class="pill-hour" id="pillHour">20HS</div>
           </div>
 
-          <div class="glass p-4 sm:p-6 w-full">
-            <div class="flex items-center justify-center lg:justify-start gap-2 mb-4 font-black text-red-700 tracking-widest text-sm">
-              <i class="fa-solid fa-hourglass-half"></i> FALTAN PARA EL SORTEO
-            </div>
-            <div class="grid grid-cols-4 gap-2 sm:gap-4">
+          <div class="glass pad w-full">
+            <div class="cd-title"><i class="fa-solid fa-hourglass-half"></i> FALTAN PARA EL SORTEO</div>
+            <div class="cd-grid">
               <div class="cd-box"><div class="num" id="cdD">00</div><div class="lbl">Días</div></div>
               <div class="cd-box"><div class="num" id="cdH">00</div><div class="lbl">Horas</div></div>
               <div class="cd-box"><div class="num" id="cdM">00</div><div class="lbl">Minutos</div></div>
@@ -582,13 +462,11 @@ body{
             <span>¡El bolillero se habilitará automáticamente al llegar la fecha y hora del sorteo!</span>
           </div>
 
-          <div class="flex flex-col items-center lg:items-start gap-2">
-            <button class="btn-spin locked" disabled aria-disabled="true">
-              <i class="fa-solid fa-lock mr-2"></i>BOLILLERO BLOQUEADO
-            </button>
-            <p class="text-sm font-bold text-gray-600">
+          <div class="flex col gap-2">
+            <button class="btn-spin locked" disabled aria-disabled="true"><i class="fa-solid fa-lock"></i>BOLILLERO BLOQUEADO</button>
+            <p class="small bold muted">
               <i class="fa-regular fa-clock"></i> Hora actual: <span id="clockNow">--:--:--</span>
-              <span id="testBadge" class="hidden ml-2 px-2 py-0.5 rounded-full bg-yellow-300 text-yellow-900 text-xs font-black">MODO PRUEBA</span>
+              <span id="testBadge" class="test-badge hidden">MODO PRUEBA</span>
             </p>
           </div>
         </div>
@@ -597,19 +475,16 @@ body{
 
     <!-- ============== PANTALLA 2: SORTEO EN VIVO ============== -->
     <section id="screenLive" class="screen hidden">
-      <div class="flex justify-center mb-6">
-        <div class="live-badge"><span class="dot"></span> SORTEO EN VIVO · SUPERSONIC TURBO CHEF</div>
-      </div>
+      <div class="live-top"><div class="live-badge"><span class="dot"></span> SORTEO EN VIVO · SUPERSONIC TURBO CHEF</div></div>
 
-      <div class="grid lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-10 items-start">
-        <!-- Bolillero -->
-        <div class="flex flex-col items-center gap-7">
+      <div class="grid-live">
+        <div class="machine-col">
           <div class="machine" id="machine">
             <div class="relative">
               <div class="sphere-axis"></div>
               <div class="sphere" id="sphere">
                 <div class="sphere-ring"></div>
-                <div id="ballsLayer"></div>
+                <canvas id="ballsCanvas"></canvas>
                 <div class="sphere-gloss"></div>
               </div>
             </div>
@@ -621,13 +496,13 @@ body{
           </div>
 
           <button class="btn-spin" id="btnSpin">
-            <i class="fa-solid fa-rotate mr-2" id="spinIcon"></i>¡GIRAR BOLILLERO!
+            <span class="ring"></span><span class="shine"></span>
+            <i class="fa-solid fa-rotate" id="spinIcon"></i>¡GIRAR BOLILLERO!
           </button>
-          <p class="text-sm font-bold text-gray-600 text-center" id="remaining"></p>
+          <p class="remaining" id="remaining"></p>
         </div>
 
-        <!-- Ganador + historial -->
-        <div class="flex flex-col gap-6">
+        <div class="side-col">
           <div class="winner-card empty" id="winnerCard">
             <div class="rays"></div>
             <div id="bulbs"></div>
@@ -635,24 +510,23 @@ body{
             <div class="winner-label">¡GANADOR/A!</div>
             <div class="winner-ball"><span id="winNum">?</span></div>
             <div class="winner-name" id="winName">Esperando la extracción…</div>
-            <div class="relative mt-2 text-sm font-bold text-red-100" id="winMeta">Presioná «¡GIRAR BOLILLERO!» para comenzar</div>
+            <div class="winner-meta" id="winMeta">Presioná «¡GIRAR BOLILLERO!» para comenzar</div>
           </div>
 
-          <div class="glass p-5">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="font-bubble text-2xl text-red-700"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Historial</h3>
-              <span class="text-xs font-black text-gray-500" id="histCount">0 extracciones</span>
+          <div class="glass pad">
+            <div class="flex between items-center mb-3">
+              <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Historial</h3>
+              <span class="xs black muted" id="histCount">0 extracciones</span>
             </div>
-            <ol id="historyList" class="flex flex-col gap-2 max-h-72 overflow-auto pr-1"></ol>
-            <p id="historyEmpty" class="text-center text-gray-500 font-bold py-4">Todavía no salió ningún número.</p>
+            <ol id="historyList" class="history"></ol>
+            <p id="historyEmpty" class="text-center bold muted" style="padding:1rem 0">Todavía no salió ningún número.</p>
           </div>
         </div>
       </div>
 
-      <!-- Tablero de 50 números -->
-      <div class="glass p-5 mt-8">
-        <h3 class="font-bubble text-2xl text-red-700 mb-4"><i class="fa-solid fa-table-cells mr-2"></i>Tablero de números</h3>
-        <div id="board" class="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-3"></div>
+      <div class="glass pad mt-8">
+        <h3 class="section-title mb-4"><i class="fa-solid fa-table-cells"></i> Tablero de números</h3>
+        <div id="board" class="board"></div>
       </div>
     </section>
   </main>
@@ -671,48 +545,44 @@ body{
 
   <!-- ============== MODAL: CARGAR PARTICIPANTES ============== -->
   <div class="modal hidden" id="modal">
-    <div class="modal-card glass p-5 sm:p-7">
-      <div class="flex items-start justify-between gap-4 mb-4">
+    <div class="modal-card">
+      <div class="flex between gap-4 mb-4" style="align-items:flex-start">
         <div>
-          <h2 class="font-bubble text-3xl text-red-700"><i class="fa-solid fa-users mr-2"></i>Cargar Participantes</h2>
-          <p class="text-sm font-bold text-gray-600 mt-1">Números del 1 al <span class="nTotal">50</span>. Los números sin nombre quedan como «Participante #X».</p>
+          <h2 class="section-title" style="font-size:1.9rem"><i class="fa-solid fa-users"></i> Cargar Participantes</h2>
+          <p class="small bold muted mt-2">Números del 1 al <span class="nTotal">50</span>. Los números sin nombre quedan como «Participante #X».</p>
         </div>
         <button class="tool-btn" id="btnCloseModal" title="Cerrar"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <div class="grid md:grid-cols-2 gap-5">
-        <div class="flex flex-col gap-3">
-          <label class="font-black text-sm text-gray-700" for="namesInput">Pegá los nombres (uno por línea)</label>
-          <textarea id="namesInput" rows="14" class="p-3 font-semibold text-sm w-full" placeholder="Ejemplos válidos:&#10;María González&#10;Juan Pérez&#10;...&#10;&#10;O con número explícito:&#10;7 - Laura Díaz&#10;12. Carlos Gómez&#10;33) Ana Ruiz"></textarea>
-          <p class="text-xs font-bold text-gray-500">
-            <i class="fa-solid fa-circle-info text-red-500"></i>
-            Sin número: se asignan en orden (línea 1 → número 1). Con número al inicio («7 - Laura»), se asigna a ese número.
-          </p>
-          <div class="flex flex-wrap gap-2">
+      <div class="modal-grid">
+        <div class="flex col gap-3">
+          <label class="small black" for="namesInput">Pegá los nombres (uno por línea)</label>
+          <textarea id="namesInput" rows="14" placeholder="Ejemplos válidos:&#10;María González&#10;Juan Pérez&#10;...&#10;&#10;O con número explícito:&#10;7 - Laura Díaz&#10;12. Carlos Gómez&#10;33) Ana Ruiz"></textarea>
+          <p class="xs bold muted"><i class="fa-solid fa-circle-info" style="color:#E53935"></i> Sin número: se asignan en orden (línea 1 → número 1). Con número al inicio («7 - Laura»), se asigna a ese número.</p>
+          <div class="flex wrap gap-2">
             <button class="btn btn-red" id="btnApplyNames"><i class="fa-solid fa-check"></i> Guardar participantes</button>
             <button class="btn btn-white" id="btnClearNames"><i class="fa-solid fa-eraser"></i> Vaciar</button>
           </div>
         </div>
-        <div class="flex flex-col gap-2 min-w-0">
-          <div class="flex items-center justify-between">
-            <span class="font-black text-sm text-gray-700">Vista previa</span>
-            <span class="text-xs font-black text-gray-500" id="namesCount"></span>
+        <div class="flex col gap-2 min-w-0">
+          <div class="flex between items-center">
+            <span class="small black">Vista previa</span>
+            <span class="xs black muted" id="namesCount"></span>
           </div>
-          <div id="namesPreview" class="grid grid-cols-2 gap-1.5 max-h-[360px] overflow-auto pr-1"></div>
+          <div id="namesPreview" class="preview"></div>
         </div>
       </div>
 
-      <!-- Herramientas de prueba / fecha -->
-      <details class="mt-6 bg-white/70 rounded-2xl border-2 border-red-100 p-4">
-        <summary class="font-black text-red-700 cursor-pointer"><i class="fa-solid fa-flask mr-1"></i> Fecha del sorteo y modo prueba</summary>
-        <div class="mt-3 grid sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <p class="font-bold text-gray-700 mb-2">Fecha oficial: <span id="officialDate" class="text-red-700"></span></p>
-            <p class="font-bold text-gray-700 mb-2">Fecha activa: <span id="activeDate" class="text-red-700"></span></p>
-            <label class="font-black text-gray-700 block mb-1" for="testDate">Simular otra fecha (hora de este dispositivo)</label>
-            <input type="datetime-local" id="testDate" class="p-2 w-full font-semibold" />
+      <details class="tools">
+        <summary><i class="fa-solid fa-flask"></i> Fecha del sorteo y modo prueba</summary>
+        <div class="tools-grid">
+          <div class="flex col gap-2">
+            <p class="bold">Fecha oficial: <span id="officialDate" class="red-text"></span></p>
+            <p class="bold">Fecha activa: <span id="activeDate" class="red-text"></span></p>
+            <label class="black" for="testDate">Simular otra fecha (hora de este dispositivo)</label>
+            <input type="datetime-local" id="testDate" />
           </div>
-          <div class="flex flex-col gap-2 justify-end">
+          <div class="flex col gap-2" style="justify-content:flex-end">
             <button class="btn btn-gold" id="btnSetTest"><i class="fa-solid fa-calendar-check"></i> Usar fecha simulada</button>
             <button class="btn btn-gold" id="btnTest10"><i class="fa-solid fa-stopwatch"></i> Probar: habilitar en 10 segundos</button>
             <button class="btn btn-white" id="btnOfficial"><i class="fa-solid fa-rotate-left"></i> Volver a la fecha oficial</button>
@@ -720,8 +590,8 @@ body{
         </div>
       </details>
 
-      <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t-2 border-red-100 pt-4">
-        <p class="text-xs font-bold text-gray-500"><i class="fa-solid fa-floppy-disk"></i> Los datos y extracciones se guardan en este navegador.</p>
+      <div class="modal-foot">
+        <p class="xs bold muted"><i class="fa-solid fa-floppy-disk"></i> Los datos y extracciones se guardan en este navegador.</p>
         <button class="btn btn-white" id="btnResetDraws"><i class="fa-solid fa-trash-can-arrow-up"></i> Reiniciar extracciones</button>
       </div>
     </div>
@@ -734,47 +604,35 @@ body{
    CONFIGURACIÓN — modificá estos valores si lo necesitás
    ===================================================================== */
 const CONFIG = {
-  // Fecha y hora oficial del sorteo (hora de Argentina, UTC-3)
-  FECHA_SORTEO: '2026-11-18T20:00:00-03:00',
-  // Cantidad de números de la rifa
+  FECHA_SORTEO: '2026-11-18T20:00:00-03:00',   // fecha y hora oficial (Argentina, UTC-3)
   TOTAL_NUMEROS: 50,
-  // Duración de la animación del giro (ms)
   DURACION_GIRO_MS: 3800,
-  // Zona horaria para mostrar fecha/hora
   ZONA_HORARIA: 'America/Argentina/Buenos_Aires',
-  // Servicio de hora por internet (si falla, se usa el reloj del dispositivo)
   URL_HORA: 'https://worldtimeapi.org/api/timezone/America/Argentina/Buenos_Aires',
 };
-/* Atajo de prueba: abrí el archivo con ?demo al final de la URL
-   (ej: index.html?demo) y el bolillero se habilita a los 10 segundos. */
+/* Atajo de prueba: abrí el archivo con ?demo al final de la URL y el bolillero
+   se habilita a los 10 segundos. */
 
 const N = CONFIG.TOTAL_NUMEROS;
 const $ = (s) => document.querySelector(s);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const pad = (n) => String(n).padStart(2, '0');
 
-/* ---------------------------------------------------------------------
-   Persistencia (localStorage protegido con try/catch)
-   --------------------------------------------------------------------- */
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} },
 };
 
-/* ---------------------------------------------------------------------
-   Estado de la aplicación
-   --------------------------------------------------------------------- */
 const state = {
-  names: normalizeNames(store.get('rifa_nombres', [])),   // índice 0 → número 1
-  drawn: store.get('rifa_extracciones', []),              // [{num, name, at}]
-  mode: 'wait',                                           // 'wait' | 'live'
+  names: normalizeNames(store.get('rifa_nombres', [])),
+  drawn: store.get('rifa_extracciones', []),
+  mode: 'wait',
+  booting: true,          // evita la animación de entrada mientras se sincroniza la hora
   spinning: false,
-  clockOffset: 0,                                         // diferencia hora internet - dispositivo
-  synced: false,
+  clockOffset: 0,
   demoTarget: /[?&]demo\b/.test(location.search) ? Date.now() + 10000 : null,
 };
-
 function normalizeNames(arr){
   const out = Array(N).fill('');
   if (Array.isArray(arr)) arr.slice(0, N).forEach((v, i) => out[i] = (v || '').toString().trim());
@@ -782,33 +640,63 @@ function normalizeNames(arr){
 }
 const nameOf = (n) => state.names[n - 1] || `Participante #${n}`;
 const now = () => Date.now() + state.clockOffset;
-
 function getTarget(){
   if (state.demoTarget) return state.demoTarget;
-  const t = store.get('rifa_fecha_prueba', null);
-  if (t) return t;
-  return Date.parse(CONFIG.FECHA_SORTEO);
+  return store.get('rifa_fecha_prueba', null) || Date.parse(CONFIG.FECHA_SORTEO);
 }
 const isTestDate = () => !!(state.demoTarget || store.get('rifa_fecha_prueba', null));
 
 /* ---------------------------------------------------------------------
-   Formateo de fechas en español (zona horaria del sorteo)
+   RENDIMIENTO: modo liviano automático
+   - Se activa si el equipo tiene pocos núcleos/memoria, o si se detectan
+     cuadros lentos durante los primeros segundos.
+   - Se puede forzar con el botón ⚡ (queda guardado).
    --------------------------------------------------------------------- */
-function partsOf(ts, opts){
-  try { return new Intl.DateTimeFormat('es-AR', { timeZone: CONFIG.ZONA_HORARIA, ...opts }).formatToParts(new Date(ts)); }
-  catch(e){ return new Intl.DateTimeFormat('es-AR', opts).formatToParts(new Date(ts)); }
+const Perf = {
+  lite: false,
+  init(){
+    const saved = store.get('rifa_liviano', null);
+    const lowEnd = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 3;
+    this.set(saved !== null ? saved : lowEnd, false);
+    if (saved === null && !this.lite) this.watch();
+  },
+  set(on, persist){
+    this.lite = !!on;
+    document.documentElement.classList.toggle('lite', this.lite);
+    $('#btnLite').classList.toggle('on', this.lite);
+    if (persist) store.set('rifa_liviano', this.lite);
+    FX.configure(); Machine.resize();
+  },
+  // Mide ~4 s de cuadros; si más del 20% tarda >34 ms, pasa a modo liviano
+  watch(){
+    let frames = 0, slow = 0, start = 0, last = 0;
+    const f = (t) => {
+      if (!start){ start = last = t; }
+      else { frames++; if (t - last > 34) slow++; last = t; }
+      if (t - start < 4000) requestAnimationFrame(f);
+      else if (frames > 20 && slow / frames > .2){ this.set(true, false); toast('⚡ Modo liviano activado para mayor fluidez'); }
+    };
+    requestAnimationFrame(f);
+  },
+  dpr(){ return Math.min(window.devicePixelRatio || 1, this.lite ? 1 : 1.5); },
+};
+
+/* ---------------------------------------------------------------------
+   Formateo de fechas
+   --------------------------------------------------------------------- */
+let fmtCache = {};
+function parts(ts, key, opts){
+  if (!fmtCache[key]){
+    try { fmtCache[key] = new Intl.DateTimeFormat('es-AR', { timeZone: CONFIG.ZONA_HORARIA, ...opts }); }
+    catch(e){ fmtCache[key] = new Intl.DateTimeFormat('es-AR', opts); }
+  }
+  return Object.fromEntries(fmtCache[key].formatToParts(new Date(ts)).map(x => [x.type, x.value]));
 }
-function fmtFull(ts){
-  const p = Object.fromEntries(partsOf(ts, { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:false }).map(x => [x.type, x.value]));
-  return `${p.day} de ${p.month} ${p.year}, ${p.hour}:${p.minute} hs`;
-}
-function fmtClock(ts){
-  const p = Object.fromEntries(partsOf(ts, { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }).map(x => [x.type, x.value]));
-  return `${p.hour}:${p.minute}:${p.second}`;
-}
+const fmtFull = (ts) => { const p = parts(ts, 'full', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:false }); return `${p.day} de ${p.month} ${p.year}, ${p.hour}:${p.minute} hs`; };
+const fmtClock = (ts) => { const p = parts(ts, 'clock', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }); return `${p.hour}:${p.minute}:${p.second}`; };
 function renderDatePills(){
   const t = getTarget();
-  const p = Object.fromEntries(partsOf(t, { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit', hour12:false }).map(x => [x.type, x.value]));
+  const p = parts(t, 'pill', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit', hour12:false });
   $('#pillDay').textContent = `${p.day} DE`;
   $('#pillMonth').textContent = (p.month || '').toUpperCase();
   $('#pillHour').textContent = p.minute === '00' ? `${p.hour}HS` : `${p.hour}:${p.minute}HS`;
@@ -818,7 +706,7 @@ function renderDatePills(){
 }
 
 /* ---------------------------------------------------------------------
-   Sincronización de hora con internet (con respaldo al reloj local)
+   Sincronización de hora con internet (respaldo: reloj del dispositivo)
    --------------------------------------------------------------------- */
 async function syncTime(){
   const chip = $('#syncChip');
@@ -834,45 +722,37 @@ async function syncTime(){
     const serverMs = data.unixtime ? data.unixtime * 1000 : Date.parse(data.utc_datetime);
     if (!isFinite(serverMs)) throw new Error('respuesta inválida');
     state.clockOffset = serverMs - (t0 + t1) / 2;
-    state.synced = true;
-    chip.innerHTML = '<i class="fa-solid fa-satellite-dish text-green-600"></i><span>Hora sincronizada con internet</span>';
+    chip.innerHTML = '<i class="fa-solid fa-satellite-dish" style="color:#16a34a"></i><span>Hora sincronizada con internet</span>';
   }catch(e){
     state.clockOffset = 0;
-    state.synced = false;
-    chip.innerHTML = '<i class="fa-solid fa-clock text-amber-500"></i><span>Hora del dispositivo</span>';
+    chip.innerHTML = '<i class="fa-solid fa-clock" style="color:#f59e0b"></i><span>Hora del dispositivo</span>';
   }
 }
 
 /* ---------------------------------------------------------------------
-   Reloj principal: cuenta regresiva y transición automática
+   Reloj: cuenta regresiva y transición automática (solo toca el DOM si cambia)
    --------------------------------------------------------------------- */
-const lastCd = {};
-function setCd(id, val){
-  const el = $(id);
-  if (lastCd[id] !== val){
-    el.textContent = val;
-    el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
-    lastCd[id] = val;
-  }
+const lastTxt = {};
+function setText(id, val, anim){
+  if (lastTxt[id] === val) return;
+  const el = $(id); el.textContent = val; lastTxt[id] = val;
+  if (anim && !Perf.lite){ el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); }
 }
 function tickClock(){
-  const t = now();
-  const diff = getTarget() - t;
-  $('#clockNow').textContent = fmtClock(t);
-
+  const t = now(), diff = getTarget() - t;
+  if (state.mode === 'wait') setText('#clockNow', fmtClock(t));
   if (diff > 0){
-    if (state.mode === 'live') goWait();   // si se cambió la fecha de prueba al futuro
+    if (state.mode === 'live') goWait();
     const s = Math.floor(diff / 1000);
-    setCd('#cdD', pad(Math.floor(s / 86400)));
-    setCd('#cdH', pad(Math.floor(s % 86400 / 3600)));
-    setCd('#cdM', pad(Math.floor(s % 3600 / 60)));
-    setCd('#cdS', pad(s % 60));
-  } else {
-    ['#cdD','#cdH','#cdM','#cdS'].forEach(id => setCd(id, '00'));
-    if (state.mode !== 'live') goLive(true);
+    setText('#cdD', pad(Math.floor(s / 86400)), true);
+    setText('#cdH', pad(Math.floor(s % 86400 / 3600)), true);
+    setText('#cdM', pad(Math.floor(s % 3600 / 60)), true);
+    setText('#cdS', pad(s % 60), true);
+  } else if (state.mode !== 'live' && !state.booting){
+    ['#cdD','#cdH','#cdM','#cdS'].forEach(id => setText(id, '00'));
+    goLive(true);
   }
 }
-
 function goLive(animated){
   state.mode = 'live';
   const wait = $('#screenWait'), live = $('#screenLive');
@@ -882,15 +762,14 @@ function goLive(animated){
     $('#hero').classList.add('compact');
     $('#heroKicker').textContent = '¡En vivo el';
     Machine.start();
-    if (animated){ FX.burst(innerWidth / 2, innerHeight / 3, 180); Sound.win(); toast('🎉 ¡El bolillero está habilitado!'); }
+    if (animated){ FX.burst(innerWidth / 2, innerHeight / 3, 140); Sound.win(); toast('🎉 ¡El bolillero está habilitado!'); }
   };
-  if (animated && !wait.classList.contains('hidden')){
-    wait.classList.add('leaving');
-    setTimeout(show, 650);
-  } else show();
+  if (animated && !wait.classList.contains('hidden')){ wait.classList.add('leaving'); setTimeout(show, 600); }
+  else show();
 }
 function goWait(){
   state.mode = 'wait';
+  Machine.stop();
   $('#screenLive').classList.add('hidden');
   $('#screenWait').classList.remove('hidden');
   $('#hero').classList.remove('compact');
@@ -898,15 +777,14 @@ function goWait(){
 }
 
 /* ---------------------------------------------------------------------
-   Sonidos sintetizados (Web Audio, sin archivos externos)
+   Sonidos sintetizados (Web Audio)
    --------------------------------------------------------------------- */
 const Sound = {
   ctx: null, on: store.get('rifa_sonido', true),
   init(){ if (!this.ctx){ try{ this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} } if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
   beep(freq, dur, type = 'square', vol = .05, when = 0){
     if (!this.on || !this.ctx) return;
-    const t = this.ctx.currentTime + when;
-    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    const t = this.ctx.currentTime + when, o = this.ctx.createOscillator(), g = this.ctx.createGain();
     o.type = type; o.frequency.setValueAtTime(freq, t);
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(this.ctx.destination); o.start(t); o.stop(t + dur + .02);
@@ -917,105 +795,140 @@ const Sound = {
 };
 
 /* ---------------------------------------------------------------------
-   Efectos de partículas: confeti ambiental + explosiones
+   Partículas (confeti). El canvas solo se redibuja cuando hay algo que mover.
    --------------------------------------------------------------------- */
 const FX = {
-  cv: null, ctx: null, parts: [], ambient: [],
+  cv: null, ctx: null, parts: [], ambient: [], running: false, dirty: false,
   colors: ['#E53935', '#D32F2F', '#FFD700', '#FFA000', '#FFFFFF', '#FF8A80', '#FFE082'],
   init(){
     this.cv = $('#fx'); this.ctx = this.cv.getContext('2d');
-    const resize = () => { const d = Math.min(devicePixelRatio || 1, 2); this.cv.width = innerWidth * d; this.cv.height = innerHeight * d; this.ctx.setTransform(d, 0, 0, d, 0, 0); };
-    resize(); addEventListener('resize', resize);
+    addEventListener('resize', () => this.resize());
+    this.resize();
+  },
+  resize(){
+    if (!this.cv) return;
+    const d = Perf.dpr();
+    this.cv.width = Math.round(innerWidth * d); this.cv.height = Math.round(innerHeight * d);
+    this.ctx.setTransform(d, 0, 0, d, 0, 0);
+  },
+  configure(){
+    if (!this.cv) return;
+    this.resize();
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const count = reduced ? 0 : (innerWidth < 640 ? 18 : 34);
-    for (let i = 0; i < count; i++) this.ambient.push(this.petal(true));
-    const loop = () => { this.draw(); requestAnimationFrame(loop); };
-    loop();
+    const target = (Perf.lite || reduced) ? 0 : (innerWidth < 640 ? 10 : 20);
+    this.ambient.length = Math.min(this.ambient.length, target);
+    while (this.ambient.length < target) this.ambient.push(this.petal(true));
+    this.wake();
   },
   petal(randomY){
-    return { x: Math.random() * innerWidth, y: randomY ? Math.random() * innerHeight : -20,
-      vy: .3 + Math.random() * .7, vx: (Math.random() - .5) * .4, rot: Math.random() * 6.28, vr: (Math.random() - .5) * .03,
-      s: 4 + Math.random() * 6, sway: Math.random() * 6.28, c: this.colors[Math.floor(Math.random() * this.colors.length)],
-      shape: Math.random() < .35 ? 'star' : 'petal', a: .35 + Math.random() * .35 };
+    return { x: Math.random() * innerWidth, y: randomY ? Math.random() * innerHeight : -20, vy: .3 + Math.random() * .6, vx: (Math.random() - .5) * .3,
+      sway: Math.random() * 6.28, s: 4 + Math.random() * 5, c: this.colors[Math.floor(Math.random() * this.colors.length)], a: .35 + Math.random() * .3 };
   },
-  burst(x, y, n = 140){
+  burst(x, y, n = 120){
+    if (Perf.lite) n = Math.round(n * .4);
     for (let i = 0; i < n; i++){
-      const ang = Math.random() * Math.PI * 2, sp = 4 + Math.random() * 11;
+      const ang = Math.random() * Math.PI * 2, sp = 4 + Math.random() * 10;
       this.parts.push({ x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 5, rot: Math.random() * 6.28, vr: (Math.random() - .5) * .35,
-        w: 6 + Math.random() * 8, h: 4 + Math.random() * 6, c: this.colors[Math.floor(Math.random() * this.colors.length)], life: 1, shape: Math.random() < .2 ? 'star' : 'rect' });
+        w: 6 + Math.random() * 7, h: 4 + Math.random() * 5, c: this.colors[Math.floor(Math.random() * this.colors.length)] });
     }
+    this.wake();
   },
-  rain(n = 200){ for (let i = 0; i < n; i++) this.parts.push({ x: Math.random() * innerWidth, y: -20 - Math.random() * innerHeight * .6, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 4, rot: Math.random() * 6.28, vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 8, h: 4 + Math.random() * 6, c: this.colors[Math.floor(Math.random() * this.colors.length)], life: 1, shape: 'rect' }); },
-  star(ctx, r){ ctx.beginPath(); for (let i = 0; i < 10; i++){ const rr = i % 2 ? r * .45 : r; const a = i * Math.PI / 5 - Math.PI / 2; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); },
-  draw(){
-    const ctx = this.ctx; ctx.clearRect(0, 0, innerWidth, innerHeight);
-    // Partículas ambientales flotando
+  rain(n = 150){
+    if (Perf.lite) n = Math.round(n * .35);
+    for (let i = 0; i < n; i++) this.parts.push({ x: Math.random() * innerWidth, y: -20 - Math.random() * innerHeight * .6, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 4, rot: Math.random() * 6.28, vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 7, h: 4 + Math.random() * 5, c: this.colors[Math.floor(Math.random() * this.colors.length)] });
+    this.wake();
+  },
+  wake(){ if (!this.running){ this.running = true; requestAnimationFrame(() => this.frame()); } },
+  frame(){
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
     for (const p of this.ambient){
-      p.sway += .02; p.x += p.vx + Math.sin(p.sway) * .4; p.y += p.vy; p.rot += p.vr;
-      if (p.y > innerHeight + 20){ Object.assign(p, this.petal(false)); }
-      ctx.save(); ctx.globalAlpha = p.a; ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c;
-      if (p.shape === 'star') this.star(ctx, p.s * .8);
-      else { ctx.beginPath(); ctx.ellipse(0, 0, p.s, p.s * .55, 0, 0, Math.PI * 2); ctx.fill(); }
-      ctx.restore();
+      p.sway += .02; p.x += p.vx + Math.sin(p.sway) * .35; p.y += p.vy;
+      if (p.y > innerHeight + 20) Object.assign(p, this.petal(false));
+      ctx.globalAlpha = p.a; ctx.fillStyle = p.c;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.s * .6, 0, 6.283); ctx.fill();
     }
-    // Confeti de explosión
+    ctx.globalAlpha = 1;
     for (let i = this.parts.length - 1; i >= 0; i--){
       const p = this.parts[i];
-      p.vy += .22; p.vx *= .985; p.vy *= .99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
-      if (p.y > innerHeight + 40) p.life = 0;
-      if (p.life <= 0){ this.parts.splice(i, 1); continue; }
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c;
-      if (p.shape === 'star') this.star(ctx, p.w * .7);
-      else ctx.fillRect(-p.w / 2, -p.h / 2 * Math.abs(Math.cos(p.rot * 2)), p.w, p.h * Math.abs(Math.cos(p.rot * 2)) + 1);
-      ctx.restore();
+      p.vy += .22; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      if (p.y > innerHeight + 30){ this.parts[i] = this.parts[this.parts.length - 1]; this.parts.pop(); continue; }
+      const h = p.h * Math.abs(Math.cos(p.rot)) + 1;
+      ctx.fillStyle = p.c; ctx.fillRect(p.x - p.w / 2, p.y - h / 2, p.w, h);
     }
+    if (this.ambient.length || this.parts.length) requestAnimationFrame(() => this.frame());
+    else { ctx.clearRect(0, 0, innerWidth, innerHeight); this.running = false; }
   },
 };
 
 /* ---------------------------------------------------------------------
-   Bolillero: física simple de bolillas dentro de la esfera
+   Bolillero: física de bolillas dibujadas en <canvas>
+   (antes eran 50 elementos HTML moviéndose: mucho más pesado)
    --------------------------------------------------------------------- */
 const Machine = {
-  balls: [], size: 0, r: 10, mixing: false, started: false,
+  balls: [], sprites: {}, size: 0, r: 10, dpr: 1, mixing: false, running: false, built: false,
   start(){
-    if (this.started){ this.measure(); return; }
-    this.started = true;
-    this.layer = $('#ballsLayer'); this.sphere = $('#sphere');
-    this.measure(); this.build();
-    addEventListener('resize', () => { this.measure(); this.balls.forEach(b => this.styleBall(b)); });
-    const loop = () => { this.step(); requestAnimationFrame(loop); };
-    loop();
+    this.cv = $('#ballsCanvas'); this.ctx = this.cv.getContext('2d'); this.sphere = $('#sphere');
+    if (!this.built){
+      this.built = true;
+      addEventListener('resize', () => this.resize());
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.makeSprites());
+      this.resize(); this.build();
+    } else this.resize();
+    this.run();
   },
-  measure(){ this.size = this.sphere.clientWidth; this.r = Math.max(9, this.size * .05); },
+  stop(){ this.running = false; },
+  run(){ if (!this.running){ this.running = true; requestAnimationFrame(() => this.frame()); } },
+  resize(){
+    if (!this.cv || !this.sphere || !this.sphere.clientWidth) return;
+    const old = this.size;
+    this.size = this.sphere.clientWidth; this.r = Math.max(9, this.size * .05); this.dpr = Perf.dpr();
+    this.cv.width = Math.round(this.size * this.dpr); this.cv.height = Math.round(this.size * this.dpr);
+    if (old && old !== this.size){ const k = this.size / old; this.balls.forEach(b => { b.x *= k; b.y *= k; }); }
+    this.makeSprites();
+  },
+  // Pre-dibuja cada bolilla una sola vez (después solo se "estampa")
+  makeSprites(){
+    const s = Math.ceil(this.r * 2 * this.dpr), R = s / 2;
+    const pal = [['#ffffff', '#ff8a80', '#D32F2F', '#ffffff'], ['#ffffff', '#fffdf6', '#e2d6c6', '#D32F2F'], ['#ffffff', '#ffe57f', '#FFA000', '#5a3500']];
+    this.sprites = {};
+    for (let n = 1; n <= N; n++){
+      const c = document.createElement('canvas'); c.width = c.height = s;
+      const g = c.getContext('2d'), col = pal[n % 3];
+      const grd = g.createRadialGradient(R * .65, R * .6, R * .05, R, R, R);
+      grd.addColorStop(0, col[0]); grd.addColorStop(.35, col[1]); grd.addColorStop(1, col[2]);
+      g.fillStyle = grd; g.beginPath(); g.arc(R, R, R - 1, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(0,0,0,.18)'; g.lineWidth = Math.max(1, R * .08); g.stroke();
+      g.font = `${Math.round(R * .95)}px 'Lilita One','Nunito',sans-serif`;
+      g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = col[3];
+      g.fillText(String(n), R, R + R * .06);
+      this.sprites[n] = c;
+    }
+  },
   build(){
-    this.layer.innerHTML = ''; this.balls = [];
+    this.balls = [];
     const out = new Set(state.drawn.map(d => d.num));
     for (let n = 1; n <= N; n++){
       if (out.has(n)) continue;
-      const el = document.createElement('div');
-      el.className = 'ball c' + (n % 3); el.textContent = n;
-      this.layer.appendChild(el);
       const a = Math.random() * Math.PI * 2, d = Math.random() * (this.size / 2 - this.r) * .85;
-      const b = { n, el, x: Math.cos(a) * d, y: Math.sin(a) * d, vx: 0, vy: 0 };
-      this.styleBall(b); this.balls.push(b);
+      this.balls.push({ n, x: Math.cos(a) * d, y: Math.sin(a) * d, vx: 0, vy: 0 });
     }
   },
-  styleBall(b){ const s = this.r * 2; b.el.style.width = s + 'px'; b.el.style.height = s + 'px'; b.el.style.fontSize = (this.r * .9) + 'px'; },
-  remove(n){
-    const i = this.balls.findIndex(b => b.n === n);
-    if (i >= 0){ const b = this.balls[i]; b.el.style.transition = 'opacity .4s, transform .4s'; b.el.style.opacity = '0'; setTimeout(() => b.el.remove(), 450); this.balls.splice(i, 1); }
+  remove(n){ const i = this.balls.findIndex(b => b.n === n); if (i >= 0) this.balls.splice(i, 1); },
+  frame(){
+    if (!this.running) return;
+    // Si la revelación tapa la pantalla o la pestaña está oculta, no calcular
+    if (!document.hidden && $('#reveal').classList.contains('hidden')) { this.step(); this.draw(); }
+    requestAnimationFrame(() => this.frame());
   },
   step(){
     if (!this.size) return;
-    const half = this.size / 2, R = half - this.r - 6, min = this.r * 2;
-    const maxV = this.mixing ? 15 : 9;
+    const R = this.size / 2 - this.r - 6, min = this.r * 2, maxV = this.mixing ? 15 : 9;
     for (const b of this.balls){
       if (this.mixing){
-        // Turbulencia + remolino al girar
         b.vx += (Math.random() - .5) * 2.4 - b.y * .012;
         b.vy += (Math.random() - .5) * 2.4 + b.x * .012;
       } else {
-        // Gravedad + pequeños "soplidos" de aire para que se vean vivas
         b.vy += .28;
         if (Math.random() < .012){ b.vy -= 2 + Math.random() * 4; b.vx += (Math.random() - .5) * 3; }
       }
@@ -1023,18 +936,16 @@ const Machine = {
       const sp = Math.hypot(b.vx, b.vy); if (sp > maxV){ b.vx *= maxV / sp; b.vy *= maxV / sp; }
       b.x += b.vx; b.y += b.vy;
       const d = Math.hypot(b.x, b.y);
-      if (d > R){ // rebote contra la pared de la esfera
+      if (d > R){
         const nx = b.x / d, ny = b.y / d; b.x = nx * R; b.y = ny * R;
         const dot = b.vx * nx + b.vy * ny;
         if (dot > 0){ b.vx -= 1.75 * dot * nx; b.vy -= 1.75 * dot * ny; }
       }
     }
-    // Colisiones entre bolillas
     for (let i = 0; i < this.balls.length; i++){
       const a = this.balls[i];
       for (let j = i + 1; j < this.balls.length; j++){
-        const b = this.balls[j];
-        const dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
+        const b = this.balls[j], dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
         if (d2 < min * min){
           const d = Math.sqrt(d2) || .01, ux = dx / d, uy = dy / d, ov = (min - d) / 2;
           a.x -= ux * ov; a.y -= uy * ov; b.x += ux * ov; b.y += uy * ov;
@@ -1043,12 +954,17 @@ const Machine = {
         }
       }
     }
-    for (const b of this.balls) b.el.style.transform = `translate(${half + b.x - this.r}px, ${half + b.y - this.r}px)`;
+  },
+  draw(){
+    const ctx = this.ctx, half = this.size / 2, s = this.r * 2;
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.clearRect(0, 0, this.size, this.size);
+    for (const b of this.balls){ const sp = this.sprites[b.n]; if (sp) ctx.drawImage(sp, half + b.x - this.r, half + b.y - this.r, s, s); }
   },
 };
 
 /* ---------------------------------------------------------------------
-   Aleatoriedad segura (crypto) para una extracción justa
+   Azar seguro (crypto) para una extracción justa
    --------------------------------------------------------------------- */
 function secureRandomInt(max){
   if (window.crypto && crypto.getRandomValues){
@@ -1061,7 +977,7 @@ function secureRandomInt(max){
 const available = () => { const out = new Set(state.drawn.map(d => d.num)); const a = []; for (let n = 1; n <= N; n++) if (!out.has(n)) a.push(n); return a; };
 
 /* ---------------------------------------------------------------------
-   Acción principal: GIRAR BOLILLERO
+   GIRAR BOLILLERO
    --------------------------------------------------------------------- */
 async function spin(){
   if (state.spinning || state.mode !== 'live') return;
@@ -1077,17 +993,14 @@ async function spin(){
   disp.classList.remove('final');
   Machine.mixing = true;
 
-  // El ganador se elige al inicio de forma aleatoria entre los que NO salieron
-  const winner = pool[secureRandomInt(pool.length)];
+  const winner = pool[secureRandomInt(pool.length)];   // al azar entre los que NO salieron
 
-  // Animación frenética de números que se desacelera
   const start = performance.now(), dur = CONFIG.DURACION_GIRO_MS;
   while (performance.now() - start < dur){
     const prog = (performance.now() - start) / dur;
     disp.textContent = pool[Math.floor(Math.random() * pool.length)];
-    disp.classList.remove('flash'); void disp.offsetWidth; disp.classList.add('flash');
     Sound.tick();
-    await sleep(45 + Math.pow(prog, 3) * 300);
+    await sleep(55 + Math.pow(prog, 3) * 300);
   }
 
   Machine.mixing = false;
@@ -1095,9 +1008,8 @@ async function spin(){
   Sound.drum();
   await sleep(450);
 
-  // Resultado
   disp.textContent = winner;
-  disp.classList.remove('flash'); void disp.offsetWidth; disp.classList.add('final');
+  void disp.offsetWidth; disp.classList.add('final');
   Machine.remove(winner);
 
   const entry = { num: winner, name: nameOf(winner), at: now() };
@@ -1105,7 +1017,7 @@ async function spin(){
   store.set('rifa_extracciones', state.drawn);
 
   showReveal(entry);
-  renderWinner(true); renderHistory(); renderBoard(winner); renderRemaining();
+  renderWinner(true); renderHistory(true); renderBoard(); renderRemaining();
 
   btn.classList.remove('busy'); $('#spinIcon').classList.remove('fa-spin');
   btn.disabled = available().length === 0;
@@ -1117,21 +1029,19 @@ function showReveal(entry){
   $('#revName').textContent = entry.name;
   const ov = $('#reveal');
   ov.classList.remove('hidden');
-  // reiniciar animaciones del overlay
   ov.querySelectorAll('.reveal-kicker,.reveal-ball,.reveal-name,.reveal-sub,.reveal-hint').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
   Sound.win();
-  FX.burst(innerWidth / 2, innerHeight * .42, 220);
-  setTimeout(() => { FX.burst(innerWidth * .2, innerHeight * .5, 90); FX.burst(innerWidth * .8, innerHeight * .5, 90); }, 450);
-  setTimeout(() => FX.rain(220), 900);
+  FX.burst(innerWidth / 2, innerHeight * .42, 160);
+  setTimeout(() => { FX.burst(innerWidth * .2, innerHeight * .5, 60); FX.burst(innerWidth * .8, innerHeight * .5, 60); }, 450);
+  setTimeout(() => FX.rain(150), 900);
 }
 function hideReveal(){ $('#reveal').classList.add('hidden'); }
 
 /* ---------------------------------------------------------------------
-   Renderizado de tarjeta ganadora, historial, tablero y contador
+   Render: ganador, historial, tablero, contador
    --------------------------------------------------------------------- */
 function renderWinner(pop){
-  const card = $('#winnerCard');
-  const last = state.drawn[state.drawn.length - 1];
+  const card = $('#winnerCard'), last = state.drawn[state.drawn.length - 1];
   if (!last){
     card.classList.add('empty');
     $('#winNum').textContent = '?';
@@ -1146,54 +1056,53 @@ function renderWinner(pop){
   if (pop){ card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); }
 }
 
-function renderHistory(){
-  const list = $('#historyList'); list.innerHTML = '';
-  // Más reciente arriba
+function renderHistory(animateNew){
+  const list = $('#historyList'), frag = document.createDocumentFragment();
   [...state.drawn].reverse().forEach((d, idx) => {
     const order = state.drawn.length - idx;
     const li = document.createElement('li');
-    li.className = 'history-item' + (order === 1 ? ' first' : '');
+    li.className = 'history-item' + (order === 1 ? ' first' : '') + (animateNew && idx === 0 ? ' new' : '');
     const num = document.createElement('div'); num.className = 'hnum'; num.textContent = d.num;
     const txt = document.createElement('div'); txt.className = 'min-w-0 flex-1';
-    const nm = document.createElement('div'); nm.className = 'font-black text-gray-800 truncate'; nm.textContent = d.name;
-    const meta = document.createElement('div'); meta.className = 'text-xs font-bold text-gray-500';
-    meta.textContent = `${order}° extracción · ${fmtClock(d.at)} hs`;
-    txt.append(nm, meta);
-    li.append(num, txt);
-    if (order === 1){ const t = document.createElement('i'); t.className = 'fa-solid fa-trophy text-yellow-500 text-xl'; li.append(t); }
-    list.appendChild(li);
+    const nm = document.createElement('div'); nm.className = 'hname truncate'; nm.textContent = d.name;
+    const meta = document.createElement('div'); meta.className = 'hmeta'; meta.textContent = `${order}° extracción · ${fmtClock(d.at)} hs`;
+    txt.append(nm, meta); li.append(num, txt);
+    if (order === 1){ const t = document.createElement('i'); t.className = 'fa-solid fa-trophy'; li.append(t); }
+    frag.appendChild(li);
   });
+  list.replaceChildren(frag);
   $('#historyEmpty').classList.toggle('hidden', state.drawn.length > 0);
   $('#histCount').textContent = `${state.drawn.length} ${state.drawn.length === 1 ? 'extracción' : 'extracciones'}`;
 }
 
-function renderBoard(latest){
-  const board = $('#board'); board.innerHTML = '';
+function renderBoard(){
+  const board = $('#board'), frag = document.createDocumentFragment();
   const out = new Set(state.drawn.map(d => d.num));
-  const last = latest ?? (state.drawn.length ? state.drawn[state.drawn.length - 1].num : null);
+  const last = state.drawn.length ? state.drawn[state.drawn.length - 1].num : null;
   for (let n = 1; n <= N; n++){
     const c = document.createElement('div');
     c.className = 'cell' + (out.has(n) ? ' out' : '') + (n === last ? ' latest' : '');
     c.textContent = n; c.title = `${n} · ${nameOf(n)}`;
-    board.appendChild(c);
+    frag.appendChild(c);
   }
+  board.replaceChildren(frag);
 }
 
 function renderRemaining(){
   const left = available().length;
   $('#remaining').innerHTML = left
-    ? `Quedan <b>${left}</b> números en el bolillero · <span class="hidden sm:inline">Tecla <kbd class="px-1.5 py-0.5 bg-white rounded border">Espacio</kbd> para girar</span>`
+    ? `Quedan <b>${left}</b> números en el bolillero<span class="sm-only"> · Tecla <kbd>Espacio</kbd> para girar</span>`
     : '¡Ya salieron todos los números!';
   $('#btnSpin').disabled = left === 0;
 }
 
-/* Luces de marquesina alrededor de la tarjeta ganadora */
 function buildBulbs(){
-  const box = $('#bulbs'); box.innerHTML = '';
-  const add = (l, t, i) => { const b = document.createElement('span'); b.className = 'bulb' + (i % 2 ? ' alt' : ''); b.style.left = l + '%'; b.style.top = t + '%'; box.appendChild(b); };
+  const box = $('#bulbs'), frag = document.createDocumentFragment();
+  const add = (l, t, i) => { const b = document.createElement('span'); b.className = 'bulb' + (i % 2 ? ' alt' : ''); b.style.left = l + '%'; b.style.top = t + '%'; frag.appendChild(b); };
   let i = 0;
-  for (let k = 0; k <= 10; k++){ add(3 + k * 9.4, 2.5, i++); add(3 + k * 9.4, 97.5, i++); }
-  for (let k = 1; k < 8; k++){ add(1.8, 2.5 + k * 11.9, i++); add(98.2, 2.5 + k * 11.9, i++); }
+  for (let k = 0; k <= 8; k++){ add(4 + k * 11.5, 2.5, i++); add(4 + k * 11.5, 97.5, i++); }
+  for (let k = 1; k < 6; k++){ add(2, 2.5 + k * 15.8, i++); add(98, 2.5 + k * 15.8, i++); }
+  box.replaceChildren(frag);
 }
 
 /* ---------------------------------------------------------------------
@@ -1212,32 +1121,24 @@ function parseNames(text){
   explicit.forEach(([n, name]) => arr[n - 1] = name);
   let idx = 0;
   sequential.forEach(name => { while (idx < N && arr[idx]) idx++; if (idx < N) arr[idx++] = name; });
-  return { arr, overflow: Math.max(0, sequential.length - arr.filter((v, i) => v && !explicit.some(e => e[0] === i + 1)).length) };
+  return arr;
 }
-
-function namesToText(){
-  return state.names.map((v, i) => v ? `${i + 1} - ${v}` : '').filter(Boolean).join('\n');
-}
+const namesToText = () => state.names.map((v, i) => v ? `${i + 1} - ${v}` : '').filter(Boolean).join('\n');
 
 function renderPreview(arr){
-  const box = $('#namesPreview'); box.innerHTML = '';
+  const box = $('#namesPreview'), frag = document.createDocumentFragment();
   let custom = 0;
   for (let n = 1; n <= N; n++){
     const v = arr[n - 1]; if (v) custom++;
     const chip = document.createElement('div'); chip.className = 'prev-chip' + (v ? '' : ' def');
     const b = document.createElement('b'); b.textContent = n;
     const s = document.createElement('span'); s.textContent = v || `Participante #${n}`; s.title = s.textContent;
-    chip.append(b, s); box.appendChild(chip);
+    chip.append(b, s); frag.appendChild(chip);
   }
+  box.replaceChildren(frag);
   $('#namesCount').textContent = `${custom} con nombre · ${N - custom} por defecto`;
 }
-
-function openModal(){
-  $('#namesInput').value = namesToText();
-  renderPreview(state.names);
-  renderDatePills();
-  $('#modal').classList.remove('hidden');
-}
+function openModal(){ $('#namesInput').value = namesToText(); renderPreview(state.names); renderDatePills(); $('#modal').classList.remove('hidden'); }
 function closeModal(){ $('#modal').classList.add('hidden'); }
 
 /* ---------------------------------------------------------------------
@@ -1256,14 +1157,14 @@ function updateSoundIcon(){ $('#btnSound').innerHTML = `<i class="fa-solid ${Sou
 function bindEvents(){
   $('#btnSpin').addEventListener('click', spin);
   $('#reveal').addEventListener('click', hideReveal);
-
   $('#btnConfig').addEventListener('click', openModal);
   $('#btnCloseModal').addEventListener('click', closeModal);
   $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 
-  $('#namesInput').addEventListener('input', e => renderPreview(parseNames(e.target.value).arr));
+  let previewTimer;
+  $('#namesInput').addEventListener('input', e => { clearTimeout(previewTimer); previewTimer = setTimeout(() => renderPreview(parseNames(e.target.value)), 200); });
   $('#btnApplyNames').addEventListener('click', () => {
-    const { arr } = parseNames($('#namesInput').value);
+    const arr = parseNames($('#namesInput').value);
     state.names = arr; store.set('rifa_nombres', arr);
     renderPreview(arr); renderBoard();
     toast('✅ Participantes guardados');
@@ -1287,12 +1188,13 @@ function bindEvents(){
   $('#btnResetDraws').addEventListener('click', () => {
     if (!confirm('¿Reiniciar todas las extracciones? Se borrará el historial y volverán las 50 bolillas.')) return;
     state.drawn = []; store.set('rifa_extracciones', []);
-    if (Machine.started) Machine.build();
+    if (Machine.built) Machine.build();
     $('#display').textContent = '?'; $('#display').classList.remove('final');
     renderWinner(); renderHistory(); renderBoard(); renderRemaining();
     toast('🔄 Extracciones reiniciadas');
   });
 
+  $('#btnLite').addEventListener('click', () => { Perf.set(!Perf.lite, true); toast(Perf.lite ? '⚡ Modo liviano activado' : '✨ Animaciones completas activadas'); });
   $('#btnSound').addEventListener('click', () => { Sound.on = !Sound.on; store.set('rifa_sonido', Sound.on); Sound.init(); updateSoundIcon(); });
   $('#btnFull').addEventListener('click', () => {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
@@ -1300,21 +1202,18 @@ function bindEvents(){
   });
   document.addEventListener('fullscreenchange', () => {
     $('#btnFull').innerHTML = `<i class="fa-solid ${document.fullscreenElement ? 'fa-compress' : 'fa-expand'}"></i>`;
-    if (Machine.started) setTimeout(() => Machine.measure(), 200);
+    setTimeout(() => Machine.resize(), 200);
   });
 
-  // Teclado: Espacio/Enter gira, Escape cierra overlays
   document.addEventListener('keydown', e => {
     const typing = /INPUT|TEXTAREA/.test(document.activeElement?.tagName);
     if (e.key === 'Escape'){ hideReveal(); closeModal(); return; }
     if (typing || !$('#modal').classList.contains('hidden')) return;
     if (e.code === 'Space' || e.key === 'Enter'){
       e.preventDefault();
-      if (!$('#reveal').classList.contains('hidden')) hideReveal();
-      else spin();
+      if (!$('#reveal').classList.contains('hidden')) hideReveal(); else spin();
     }
   });
-  // Desbloquear audio con la primera interacción
   ['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => Sound.init(), { once: true }));
 }
 
@@ -1322,24 +1221,24 @@ function bindEvents(){
    Inicio
    --------------------------------------------------------------------- */
 (async function init(){
-  $$init();
+  document.querySelectorAll('.nTotal').forEach(el => el.textContent = N);
   FX.init();
+  Perf.init();          // decide modo liviano y configura partículas
   buildBulbs();
   bindEvents();
   updateSoundIcon();
   renderDatePills();
   renderWinner(); renderHistory(); renderBoard(); renderRemaining();
-  if (state.drawn.length){ const l = state.drawn[state.drawn.length - 1]; $('#display').textContent = l.num; }
+  if (state.drawn.length) $('#display').textContent = state.drawn[state.drawn.length - 1].num;
 
-  await syncTime();
-  // Si ya pasó la hora al abrir, entrar directo al bolillero sin animación
-  if (now() >= getTarget()) goLive(false);
   tickClock();
   setInterval(tickClock, 250);
-  setInterval(syncTime, 10 * 60 * 1000); // re-sincroniza cada 10 minutos
+  await syncTime();
+  state.booting = false;
+  if (now() >= getTarget() && state.mode !== 'live') goLive(false);
+  tickClock();
+  setInterval(syncTime, 10 * 60 * 1000);
 })();
-
-function $$init(){ document.querySelectorAll('.nTotal').forEach(el => el.textContent = N); }
 </script>
 </body>
 </html>
